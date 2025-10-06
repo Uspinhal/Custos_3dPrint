@@ -1,0 +1,4 @@
+# Adicione aqui as dependências do seu projeto
+# Exemplo:
+sqlite3
+PyQt5

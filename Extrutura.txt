@@ -1,0 +1,30 @@
+impressao_3d/
+│
+├── custos/
+│   ├── __init__.py
+│   └── custos.py
+│
+├── precificacao/
+│   ├── __init__.py
+│   └── precificacao.py
+│
+├── clientes/
+│   ├── __init__.py
+│   └── clientes.py
+│
+├── pedidos/
+│   ├── __init__.py
+│   └── pedidos.py
+│
+├── relatorios/
+│   ├── __init__.py
+│   └── relatorios.py
+│
+├── banco_dados/
+│   ├── __init__.py
+│   └── conexao_banco.py
+│
+├── GUI/
+│   ├── __init__.py
+│   └── telas.py
+└── main.py

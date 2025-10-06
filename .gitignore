@@ -1,0 +1,16 @@
+dados.db
+
+# Ambiente virtual
+.venv/
+
+# Cache do Python
+__pycache__/
+*.pyc
+
+# Configurações de IDEs
+.vscode/
+.idea/
+
+# Arquivos temporários
+*.log
+*.tmp
