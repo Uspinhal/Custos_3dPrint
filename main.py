@@ -40,7 +40,7 @@ def calcular_custos(banco_dados, custos_manager):
         return
 
     # Selecionar matéria-prima
-    materias_primas = banco_dados.obter_materias_primas()
+    materias_primas = banco_dados.obter_materia_prima()
     materia_prima_escolhida = Telas.escolher_item(materias_primas, "matéria-prima")
     if not materia_prima_escolhida:
         return

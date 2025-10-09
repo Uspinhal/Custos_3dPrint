@@ -32,7 +32,12 @@ class BancoDados:
             cursor.execute('''CREATE TABLE IF NOT EXISTS materia_prima (
                                 id INTEGER PRIMARY KEY,
                                 nome TEXT NOT NULL UNIQUE,
+                                tipo TEXT,
+                                material TEXT,
+                                cor TEXT,
+                                marca TEXT, 
                                 quantidade REAL,
+                                estoque_minimo REAL,
                                 preco REAL
                              )''')
             cursor.execute('''CREATE TABLE IF NOT EXISTS insumos (

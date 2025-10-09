@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sistema de Gestão Make It Real 3D</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: Arial, sans-serif; background: #f5f5f5; }
+        .container { max-width: 1200px; margin: 0 auto; padding: 20px; }
+        .header { background: #2c3e50; color: white; padding: 20px; text-align: center; }
+        .tabs { display: flex; background: white; margin: 20px 0; border-radius: 8px; overflow: hidden; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        .tab { flex: 1; padding: 15px; text-align: center; cursor: pointer; border: none; background: #ecf0f1; }
+        .tab.active { background: #3498db; color: white; }
+        .content { background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        .form-group { margin: 15px 0; }
+        .form-group label { display: block; margin-bottom: 5px; font-weight: bold; }
+        .form-group input, .form-group select { width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 4px; }
+        .btn { background: #3498db; color: white; padding: 10px 20px; border: none; border-radius: 4px; cursor: pointer; }
+        .btn:hover { background: #2980b9; }
+        .table { width: 100%; border-collapse: collapse; margin: 20px 0; }
+        .table th, .table td { padding: 10px; text-align: left; border-bottom: 1px solid #ddd; }
+        .table th { background: #f8f9fa; }
+        .alert { padding: 10px; margin: 10px 0; border-radius: 4px; }
+        .alert-success { background: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
+        .alert-error { background: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
+        .hidden { display: none; }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>🎯 Sistema de Gestão Make It Real 3D</h1>
+        <p>Gestão interna de custos e produção</p>
+    </div>
+
+    <div class="container">
+        <div class="tabs">
+            <button class="tab active" onclick="showTab('materias-primas')">Matérias-Primas</button>
+            <button class="tab" onclick="showTab('equipamentos')">Equipamentos</button>
+            <button class="tab" onclick="showTab('insumos')">Insumos</button>
+            <button class="tab" onclick="showTab('custos')">Calcular Custos</button>
+        </div>
+
+        <div id="alert-container"></div>
+
+        <!-- Matérias-Primas -->
+        <div id="materias-primas" class="content">
+            <h2>Matérias-Primas</h2>
+            <form id="form-materia-prima">
+                <div class="form-group">
+                    <label>Nome:</label>
+                    <input type="text" id="mp-nome" required>
+                </div>
+                <div class="form-group">
+                    <label>Tipo:</label>
+                    <select id="mp-tipo" required>
+                        <option value="">Selecione...</option>
+                        <option value="Filamento">Filamento</option>
+                        <option value="Resina">Resina</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Marca:</label>
+                    <input type="text" id="mp-marca" required>
+                </div>     
+                <div class="form-group">
+                    <label>Qualidade:</label>
+                    <input type="text" id="mp-qualidade" placeholder="Ex: Premium, Básica" required>
+                </div>                           
+                <div class="form-group">
+                    <label>Quantidade (g):</label>
+                    <input type="number" id="mp-quantidade" step="0.01" required>
+                </div>
+                <div class="form-group">
+                    <label>Preço por kg (R$):</label>
+                    <input type="number" id="mp-preco" step="0.01" required>
+                </div>
+                <button type="submit" class="btn">Adicionar</button>
+            </form>
+            <table class="table" id="table-materias-primas">
+                <thead>
+                    <tr><th>Nome</th><th>Quantidade (g)</th><th>Preço/kg (R$)</th></tr>
+                </thead>
+                <tbody></tbody>
+            </table>
+        </div>
+
+        <!-- Equipamentos -->
+        <div id="equipamentos" class="content hidden">
+            <h2>Equipamentos</h2>
+            <form id="form-equipamento">
+                <div class="form-group">
+                    <label>Nome:</label>
+                    <input type="text" id="eq-nome" required>
+                </div>
+                <div class="form-group">
+                    <label>Potência (W):</label>
+                    <input type="number" id="eq-potencia" step="0.01" required>
+                </div>
+                <div class="form-group">
+                    <label>Preço Atual (R$):</label>
+                    <input type="number" id="eq-preco" step="0.01" required>
+                </div>
+                <div class="form-group">
+                    <label>Valor Inicial (R$):</label>
+                    <input type="number" id="eq-valor-inicial" step="0.01" required>
+                </div>
+                <div class="form-group">
+                    <label>Vida Útil (horas):</label>
+                    <input type="number" id="eq-vida-util" step="0.01" required>
+                </div>
+                <button type="submit" class="btn">Adicionar</button>
+            </form>
+            <table class="table" id="table-equipamentos">
+                <thead>
+                    <tr><th>Nome</th><th>Potência (W)</th><th>Preço (R$)</th><th>Vida Útil (h)</th></tr>
+                </thead>
+                <tbody></tbody>
+            </table>
+        </div>
+
+        <!-- Insumos -->
+        <div id="insumos" class="content hidden">
+            <h2>Insumos</h2>
+            <form id="form-insumo">
+                <div class="form-group">
+                    <label>Nome:</label>
+                    <input type="text" id="in-nome" required>
+                </div>
+                <div class="form-group">
+                    <label>Quantidade:</label>
+                    <input type="number" id="in-quantidade" step="0.01" required>
+                </div>
+                <div class="form-group">
+                    <label>Unidade:</label>
+                    <input type="text" id="in-unidade" placeholder="kWh, unidade, etc." required>
+                </div>
+                <div class="form-group">
+                    <label>Preço por unidade (R$):</label>
+                    <input type="number" id="in-preco" step="0.01" required>
+                </div>
+                <button type="submit" class="btn">Adicionar</button>
+            </form>
+            <table class="table" id="table-insumos">
+                <thead>
+                    <tr><th>Nome</th><th>Quantidade</th><th>Unidade</th><th>Preço (R$)</th></tr>
+                </thead>
+                <tbody></tbody>
+            </table>
+        </div>
+
+        <!-- Calcular Custos -->
+        <div id="custos" class="content hidden">
+            <h2>Calcular Custos</h2>
+            <form id="form-custos">
+                <div class="form-group">
+                    <label>Equipamento:</label>
+                    <select id="custo-equipamento" required>
+                        <option value="">Selecione...</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Matéria-Prima:</label>
+                    <select id="custo-materia-prima" required>
+                        <option value="">Selecione...</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Quantidade Utilizada (g):</label>
+                    <input type="number" id="custo-quantidade" step="0.01" required>
+                </div>
+                <div class="form-group">
+                    <label>Tempo de Impressão (min):</label>
+                    <input type="number" id="custo-tempo" step="0.01" required>
+                </div>
+                <button type="submit" class="btn">Calcular</button>
+            </form>
+            <div id="resultado-custos" class="hidden">
+                <h3>Resultado:</h3>
+                <p><strong>Custo Matéria-Prima:</strong> R$ <span id="custo-mp"></span></p>
+                <p><strong>Custo Energia:</strong> R$ <span id="custo-energia"></span></p>
+                <p><strong>Custo Total:</strong> R$ <span id="custo-total"></span></p>
+            </div>
+        </div>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>

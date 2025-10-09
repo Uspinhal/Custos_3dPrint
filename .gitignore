@@ -1,4 +1,4 @@
-dados.db
+database.db
 
 # Ambiente virtual
 .venv/
