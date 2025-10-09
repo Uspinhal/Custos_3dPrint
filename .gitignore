@@ -1,7 +1,10 @@
 database.db
+db.sqlite3
+*.qsqlite3
 
 # Ambiente virtual
 .venv/
+.env/
 
 # Cache do Python
 __pycache__/
