@@ -1,30 +1,35 @@
 impressao_3d/
 │
-├── custos/
-│   ├── __init__.py
-│   └── custos.py
-│
-├── precificacao/
-│   ├── __init__.py
-│   └── precificacao.py
-│
-├── clientes/
-│   ├── __init__.py
-│   └── clientes.py
-│
-├── pedidos/
-│   ├── __init__.py
-│   └── pedidos.py
-│
-├── relatorios/
-│   ├── __init__.py
-│   └── relatorios.py
-│
-├── banco_dados/
-│   ├── __init__.py
-│   └── conexao_banco.py
-│
-├── GUI/
-│   ├── __init__.py
-│   └── telas.py
+├── django_app/impressao_3d
+    ├── equipamentos/
+    │    ├── __init__.py
+    │    ├── admin.py
+    │    ├── apps.py
+    │    ├── models.py
+    │    └── migrations/
+    │
+    ├──estoque/
+    │   ├── __init__.py
+    │   ├── admin.py
+    │   ├── apps.py
+    │   ├── models.py
+    │   └── migrations/
+    │
+    ├──custos/
+    │   ├── __init__.py
+    │   ├── admin.py
+    │   ├── apps.py
+    │   ├── models.py
+    │   ├── utils.py
+    │   ├── views.py
+    │   ├── urls.py
+    │   ├── tests.py
+    │   └── migrations/
+    │
+    ├── core/
+    │    ├── __init__.py
+    │    ├── settings.py
+    │    ├── urls.py
+    │    └── wsgi.py
+    ├── manage.py
 └── main.py
