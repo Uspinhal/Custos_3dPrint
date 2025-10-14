@@ -1,0 +1,104 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<h1>{% if equipamento %}Editar{% else %}Novo{% endif %} Equipamento</h1>
+
+<form method="POST" id="equipamento-form" style="max-width:600px; margin:auto;">
+    {% csrf_token %}
+    
+    <div>
+        {{ form.nome.label_tag }}
+        {{ form.nome }}
+    </div>
+    
+    <div>
+        {{ form.modelo.label_tag }}
+        {{ form.modelo }}
+    </div>
+    
+    <div>
+        {{ form.tipo.label_tag }}
+        {{ form.tipo }}
+    </div>
+
+    <div>
+        <label for="fabricante">Fabricante:</label>
+        <select name="fabricante" id="fabricante">
+            <option value="">-- Selecione --</option>
+            {% for f in fabricantes %}
+                <option value="{{ f.id }}" {% if equipamento and equipamento.fabricante and f.id == equipamento.fabricante.id %}selected{% endif %}>{{ f.nome }}</option>
+            {% endfor %}
+        </select>
+        <a href="#" id="adicionar-fabricante-toggle" style="margin-left:10px;">+ Adicionar novo fabricante</a>
+
+        <div id="novo-fabricante-div" style="display:none; margin-top:10px;">
+            <input type="text" id="novo-fabricante" placeholder="Nome do fabricante" style="width:70%;">
+            <button type="button" id="adicionar-fabricante-btn">Adicionar</button>
+        </div>
+    </div>
+
+    <div>
+        {{ form.data_aquisicao.label_tag }}
+        {{ form.data_aquisicao }}
+    </div>
+
+    <div>
+        {{ form.custo_aquisicao.label_tag }}
+        {{ form.custo_aquisicao }}
+    </div>
+
+    <div>
+        {{ form.custo_manutencao_mensal.label_tag }}
+        {{ form.custo_manutencao_mensal }}
+    </div>
+
+    <div>
+        {{ form.potencia_watts.label_tag }}
+        {{ form.potencia_watts }}
+    </div>
+
+    <div>
+        {{ form.vida_util_anos.label_tag }}
+        {{ form.vida_util_anos }}
+    </div>
+
+    <button type="submit" style="margin-top:15px;">Salvar</button>
+</form>
+
+<a href="{% url 'equipamentos:lista' %}" style="display:block; margin-top:20px;">← Voltar</a>
+
+<script>
+document.getElementById('adicionar-fabricante-toggle').addEventListener('click', function(e){
+    e.preventDefault();
+    var div = document.getElementById('novo-fabricante-div');
+    div.style.display = div.style.display === 'none' ? 'block' : 'none';
+});
+
+document.getElementById('adicionar-fabricante-btn').addEventListener('click', function(){
+    var nome = document.getElementById('novo-fabricante').value.trim();
+    if(!nome) return;
+
+    fetch("{% url 'equipamentos:adicionar_fabricante_ajax' %}", {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json",
+            "X-CSRFToken": "{{ csrf_token }}",
+        },
+        body: JSON.stringify({nome: nome})
+    })
+    .then(res => res.json())
+    .then(data => {
+        var select = document.getElementById('fabricante');
+        var option = document.createElement('option');
+        option.value = data.id;
+        option.text = data.nome;
+        option.selected = true;
+        select.add(option);
+        document.getElementById('novo-fabricante-div').style.display = 'none';
+        document.getElementById('novo-fabricante').value = '';
+    })
+    .catch(err => console.error(err));
+});
+</script>
+{% endblock %}
+`

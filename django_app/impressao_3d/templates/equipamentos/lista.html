@@ -1,0 +1,55 @@
+{% extends "base.html" %}
+
+{% block title %}Equipamentos{% endblock %}
+
+{% block content %}
+<h1>Equipamentos</h1>
+<a class="btn" href="{% url 'equipamentos:criar' %}">+ Novo Equipamento</a>
+
+<table border="1" cellpadding="8" cellspacing="0" style="margin-top: 20px; width: 120%; border-collapse: collapse;">
+    <thead>
+        <tr>
+            <th>Nome</th>
+            <th>Modelo</th>
+            <th>Tipo</th>
+            <th>Fabricante</th>
+            <th>Data de aquisição</th>
+            <th>Custo aquisição</th>
+            <th>Custo manutenção</th>
+            <th>Potência (W)</th>
+            <th>Vida útil (anos)</th>
+            <th>Ações</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for e in equipamentos %}
+        <tr>
+            <td>{{ e.nome }}</td>
+            <td>{{ e.modelo }}</td>
+            <td>{{ e.tipo }}</td>
+            <td>
+                {% if e.fabricante %}
+                    {{ e.fabricante.nome }}
+                {% else %}
+                    -
+                {% endif %}
+            </td>
+            <td>{{ e.data_aquisicao|date:"d/m/Y" }}</td>
+            <td>{{ e.custo_aquisicao|floatformat:2 }}</td>
+            <td>{{ e.custo_manutencao_mensal|floatformat:2 }}</td>
+            <td>{{ e.potencia_watts|floatformat:2 }}</td>
+            <td>{{ e.vida_util_anos }}</td>
+            <td>
+                <a href="{% url 'equipamentos:editar' e.id %}" class="edit">Editar</a>
+                <a href="{% url 'equipamentos:deletar' e.id %}" class="delete" onclick="return confirm('Excluir este equipamento?')">Excluir</a>
+            </td>
+        </tr>
+        {% empty %}
+        <tr><td colspan="10">Nenhum equipamento cadastrado.</td></tr>
+        {% endfor %}
+    </tbody>
+</table>
+ <a href="{% url 'core:home' %}" class="btn">← Voltar</a>
+{% endblock %}
+
+

@@ -1,0 +1,35 @@
+{% extends 'base.html' %}
+{% block content %}
+<h2>Compras de Insumos</h2>
+<a href="{% url 'estoque:criar_compra_insumo' %}" class="btn btn-primary mb-3">Adicionar Compra</a>
+<table class="table table-striped">
+    <thead>
+        <tr>
+            <th>Insumo</th>
+            <th>Data</th>
+            <th>Quantidade</th>
+            <th>Preço Total (R$)</th>
+            <th>Preço Unitário (R$/unidade)</th>
+            <th>Ações</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for c in compras %}
+        <tr>
+            <td>{{ c.insumo.nome }}</td>
+            <td>{{ c.data_compra }}</td>
+            <td>{{ c.quantidade }}</td>
+            <td>{{ c.preco_total|floatformat:2 }}</td>
+            <td>{{ c.preco_unitario|floatformat:2 }}</td>
+            <td>
+                <a href="{% url 'estoque:editar_compra_insumos' c.id %}" class="btn btn-sm btn-warning">Editar</a>
+                <a href="{% url 'estoque:deletar_compra_insumos' c.id %}" class="btn btn-sm btn-danger"
+                onclick="return confirm('Deseja realmente excluir esta compra?')">Excluir</a>
+            </td>            
+        </tr>
+        {% empty %}
+        <tr><td colspan="5">Nenhuma compra registrada.</td></tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endblock %}

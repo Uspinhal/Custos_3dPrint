@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Sistema de Gestão{% endblock %}</title>
+    <style>
+        /* Reset básico */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f3f4f6;
+            min-height: 100vh;
+        }
+
+        header {
+            background-color: #2563eb;
+            color: white;
+            padding: 20px;
+            text-align: center;
+            font-size: 1.5em;
+        }
+
+        nav {
+            background-color: #2563eb;
+            padding: 10px 0;
+        }
+
+        nav .menu {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+
+        nav .menu a {
+            text-decoration: none;
+            color: white;
+            padding: 10px 20px;
+            border-radius: 8px;
+            background-color: #2563eb;
+            transition: 0.3s;
+        }
+
+        nav .menu a:hover {
+            background-color: #1e40af;
+        }
+
+        main {
+            padding: 30px 15px;
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+
+        footer {
+            text-align: center;
+            padding: 15px;
+            background-color: #2563eb;
+            color: white;
+            margin-top: 30px;
+        }
+
+        /* Botões padrões */
+        .btn {
+            display: inline-block;
+            padding: 10px 15px;
+            background-color: #1e40af;
+            color: white;
+            border-radius: 5px;
+            text-decoration: none;
+            transition: 0.3s;
+        }
+
+        .btn:hover {
+            background-color: #1e40af;
+        }
+
+    </style>
+</head>
+<body>
+    <header>
+        Sistema de Gestão - Make It Real 3D
+    </header>
+
+    <nav>
+        <div class="menu">
+            <a href="{% url 'estoque:lista_materias_primas' %}">Matérias-primas</a>
+            <a href="{% url 'estoque:lista_insumos' %}">Insumos</a>
+            <a href="{% url 'equipamentos:lista' %}">Equipamentos</a>
+            <a href="/custos/calcular/">Calcular Custo</a>
+        </div>
+    </nav>
+
+    <main>
+        {% block content %}
+        <!-- Conteúdo de cada página vai aqui -->
+        {% endblock %}
+    </main>
+   
+    <footer>
+        &copy; {{ now|date:"Y" }} Make It Real 3D - Todos os direitos reservados
+    </footer>
+</body>
+</html>

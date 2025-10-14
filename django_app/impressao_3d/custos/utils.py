@@ -65,8 +65,8 @@ class CalculadoraCustosResina(CalculadoraCustos):
         self.resina = MateriaPrima.objects.filter(tipo='resina').first()
 
     def custo_resina(self):
-        if self.resina and self.resina.preco:
-            return self.quantidade_resina * float(self.resina.preco) / 1000  # Convertendo g para kg
+        if self.resina and self.resina.preco_unitario:
+            return self.quantidade_resina * float(self.resina.preco_unitario) / 1000  # Convertendo g para kg
         return 0
 
     def custo_insumos(self):
@@ -116,8 +116,8 @@ class CalculadoraCustosFilamento(CalculadoraCustos):
         self.filamento = MateriaPrima.objects.filter(tipo='filamento').first()
 
     def custo_filamento(self):
-        if self.filamento and self.filamento.preco:
-            return self.quantidade_filamento * float(self.filamento.preco) / 1000  # Convertendo g para kg
+        if self.filamento and self.filamento.preco_unitario:
+            return self.quantidade_filamento * float(self.filamento.preco_unitario) / 1000  # Convertendo g para kg
         return 0
 
     def custo_insumos(self):

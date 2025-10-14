@@ -1,72 +1,65 @@
+{% extends 'base.html' %}
 {% load static %}
-<!doctype html>
-<html lang="pt-br">
-<head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width,initial-scale=1">
-  <title>Calcular Custo - Impressão 3D</title>
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-</head>
-<body class="bg-light">
-  <div class="container py-4">
+
+{% block content %}
+<div class="container py-4">
     <div class="d-flex justify-content-between align-items-center mb-3">
-      <h1>Calcular custo de impressão</h1>
-      <a class="btn btn-secondary" href="{% url 'admin:index' %}">Admin</a>
+        <h1>Calcular custo de impressão</h1>
     </div>
 
     <div class="card mb-4">
-      <div class="card-body">
-        <form method="post" id="form-calculo">
-          {% csrf_token %}
-          <div class="row g-3">
-            <div class="col-md-4">{{ form.tipo.label_tag }} {{ form.tipo }}</div>
-            <div class="col-md-4">{{ form.equipamento.label_tag }} {{ form.equipamento }}</div>
-            <div class="col-md-4">{{ form.materia_prima.label_tag }} {{ form.materia_prima }}</div>
-            <div class="col-md-4">{{ form.quantidade.label_tag }} {{ form.quantidade }}</div>
-            <div class="col-md-4">{{ form.tempo_horas.label_tag }} {{ form.tempo_horas }}</div>
-            <div class="col-md-4">{{ form.taxa_perda.label_tag }} {{ form.taxa_perda }}</div>
-          </div>
+        <div class="card-body">
+            <form method="post" id="form-calculo">
+                {% csrf_token %}
+                <div class="row g-3">
+                    <div class="col-md-4">{{ form.tipo.label_tag }} {{ form.tipo }}</div>
+                    <div class="col-md-4">{{ form.equipamento.label_tag }} {{ form.equipamento }}</div>
+                    <div class="col-md-4">{{ form.materia_prima.label_tag }} {{ form.materia_prima }}</div>
+                    <div class="col-md-4">{{ form.quantidade.label_tag }} {{ form.quantidade }}</div>
+                    <div class="col-md-4">{{ form.tempo_horas.label_tag }} {{ form.tempo_horas }}</div>
+                    <div class="col-md-4">{{ form.taxa_perda.label_tag }} {{ form.taxa_perda }}</div>
+                </div>
 
-          <div class="mt-3">
-            <button class="btn btn-primary">Calcular</button>
-            <a class="btn btn-outline-secondary" href="?">Limpar</a>
-          </div>
-        </form>
-      </div>
+                <div class="mt-3">
+                    <button class="btn btn-primary">Calcular</button>
+                    <a class="btn btn-outline-secondary" href="?">Limpar</a>
+                </div>
+            </form>
+        </div>
     </div>
 
     {% if result %}
     <div class="card">
-      <div class="card-header">
-        <strong>Resultado: R$ {{ breakdown.custo_total|floatformat:2 }}</strong>
-      </div>
-      <div class="card-body">
-        <h6>Detalhamento</h6>
-        <ul>
-          <li>Matéria-prima: R$ {{ breakdown.custo_materia|floatformat:2 }}</li>
-          <li>Energia: R$ {{ breakdown.custo_energia|floatformat:2 }}</li>
-          <li>Manutenção: R$ {{ breakdown.custo_manutencao|floatformat:2 }}</li>
-          <li>Depreciação: R$ {{ breakdown.depreciacao|floatformat:2 }}</li>
-          <li>Insumos: R$ {{ breakdown.custo_insumos|floatformat:2 }}</li>
-          <li>Pós-processamento: R$ {{ breakdown.custo_pos_processamento|floatformat:2 }}</li>
-          <li>Perda: R$ {{ breakdown.custo_perda|floatformat:2 }}</li>
-        </ul>
-      </div>
+        <div class="card-header">
+            <strong>Resultado: R$ {{ breakdown.custo_total|floatformat:2 }}</strong>
+        </div>
+        <div class="card-body">
+            <h6>Detalhamento</h6>
+            <ul>
+                <li>Matéria-prima: R$ {{ breakdown.custo_materia|floatformat:2 }}</li>
+                <li>Energia: R$ {{ breakdown.custo_energia|floatformat:2 }}</li>
+                <li>Manutenção: R$ {{ breakdown.custo_manutencao|floatformat:2 }}</li>
+                <li>Depreciação: R$ {{ breakdown.depreciacao|floatformat:2 }}</li>
+                <li>Insumos: R$ {{ breakdown.custo_insumos|floatformat:2 }}</li>
+                <li>Pós-processamento: R$ {{ breakdown.custo_pos_processamento|floatformat:2 }}</li>
+                <li>Perda: R$ {{ breakdown.custo_perda|floatformat:2 }}</li>
+            </ul>
+        </div>
     </div>
     {% endif %}
-  </div>
+</div>
 
-  <script>
-    // Quando o campo "tipo" mudar, recarrega a página com ?tipo=... para filtrar materiais
+<script>
+    // Recarrega a página quando o tipo muda
     const tipoField = document.querySelector('#id_tipo');
     if (tipoField) {
-      tipoField.addEventListener('change', function() {
-        const val = this.value;
-        const url = new URL(window.location.href);
-        url.searchParams.set('tipo', val);
-        window.location.href = url.toString();
-      });
+        tipoField.addEventListener('change', function() {
+            const val = this.value;
+            const url = new URL(window.location.href);
+            url.searchParams.set('tipo', val);
+            window.location.href = url.toString();
+        });
     }
-  </script>
-</body>
-</html>
+</script>
+ <a href="{% url 'core:home' %}" class="btn">← Voltar</a>
+{% endblock %}

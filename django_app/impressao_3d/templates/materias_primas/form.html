@@ -1,0 +1,50 @@
+{% extends "base.html" %}
+
+{% block title %}{% if materia %}Editar{% else %}Nova{% endif %} Matéria-prima{% endblock %}
+
+{% block content %}
+<h1>{% if materia %}Editar{% else %}Nova{% endif %} Matéria-prima</h1>
+
+<form method="POST">
+    {% csrf_token %}
+    <label>Nome:</label>
+    <input type="text" name="nome" value="{{ materia.nome|default:'' }}" required>
+
+    <label>Tipo:</label>
+    <select name="tipo">
+        <option value="">Selecione</option>
+        <option value="filamento" {% if materia.tipo == 'filamento' %}selected{% endif %}>Filamento</option>
+        <option value="resina" {% if materia.tipo == 'resina' %}selected{% endif %}>Resina</option>
+    </select>
+
+    <label>Material:</label>
+    <input type="text" name="material" value="{{ materia.material|default:'' }}">
+
+    <label>Cor:</label>
+    <input type="text" name="cor" value="{{ materia.cor|default:'' }}">
+
+    <label>Marca:</label>
+    <select name="marca">
+        <option value="">Selecione</option>
+        {% for marca in marcas %}
+        <option value="{{ marca.id }}" {% if materia.marca and materia.marca.id == marca.id %}selected{% endif %}>{{ marca.nome }}</option>
+        {% endfor %}
+    </select>
+
+    <label>Quantidade:</label>
+    <input type="number" step="0.01" name="quantidade" value="{{ materia.quantidade|default:0 }}">
+
+    <label>Unidade:</label>
+    <input type="text" name="unidade" value="{{ materia.unidade|default:'kg' }}">
+
+    <label>Estoque mínimo:</label>
+    <input type="number" step="0.01" name="estoque_minimo" value="{{ materia.estoque_minimo|default:0 }}">
+
+    <label>Preço total (R$):</label>
+    <input type="number" step="0.01" name="preco_total" value="{{ materia.preco_total|default:0 }}">
+
+    <button type="submit" class="btn">Salvar</button>
+</form>
+
+<a href="{% url 'estoque:lista_materias_primas' %}" class="btn">← Voltar</a>
+{% endblock %}

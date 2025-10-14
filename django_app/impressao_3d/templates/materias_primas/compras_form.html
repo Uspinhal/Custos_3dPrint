@@ -1,0 +1,28 @@
+{% extends 'base.html' %}
+{% block content %}
+<h2>Nova Compra de Matéria-Prima</h2>
+<form method="post">
+    {% csrf_token %}
+    <div class="mb-3">
+        <label for="materia_prima">Matéria-Prima:</label>
+        <select name="materia_prima" class="form-control" required>
+            {% for m in materias %}
+            <option value="{{ m.id }}">{{ m.nome }}</option>
+            {% endfor %}
+        </select>
+    </div>
+    <div class="mb-3">
+        <label>Quantidade:</label>
+        <input type="number" step="0.01" name="quantidade" class="form-control" required>
+    </div>
+    <div class="mb-3">
+        <label>Preço Total (R$):</label>
+        <input type="number" step="0.01" name="preco_total" class="form-control" required>
+    </div>
+    <div class="mb-3">
+        <label>Data da Compra:</label>
+        <input type="date" name="data_compra" class="form-control">
+    </div>
+    <button type="submit" class="btn btn-success">Salvar</button>
+</form>
+{% endblock %}
