@@ -24,15 +24,17 @@ class InsumoForm(forms.ModelForm):
     class Meta:
         model = Insumos
         fields = [
-            'nome', 'tipo', 'descricao', 'quantidade', 'unidade',
-            'estoque_minimo', 'preco_total'
+            'nome', 'categoria', 'tipo', 'descricao', 'quantidade', 'unidade',
+            'estoque_minimo', 'preco_total','peso_no_calculo',
         ]
         widgets = {
             'nome': forms.TextInput(attrs={'class': 'form-control'}),
+            'categoria': forms.Select(attrs={'class': 'form-select'}),
             'tipo': forms.Select(attrs={'class': 'form-select'}),
             'descricao': forms.Textarea(attrs={'class': 'form-control', 'rows': 3}),
             'quantidade': forms.NumberInput(attrs={'class': 'form-control', 'step': '0.01'}),
             'unidade': forms.TextInput(attrs={'class': 'form-control'}),
             'estoque_minimo': forms.NumberInput(attrs={'class': 'form-control', 'step': '0.01'}),
             'preco_total': forms.NumberInput(attrs={'class': 'form-control', 'step': '0.01'}),
+            'peso_no_calculo': forms.NumberInput(attrs={'class':'form-control', 'step':'0.01'}),
         }

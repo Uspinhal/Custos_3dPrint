@@ -1,4 +1,9 @@
+import json
+from django.views.decorators.http import require_POST
+from django.http import JsonResponse
+from django.views.decorators.csrf import csrf_exempt
 from django.shortcuts import render, redirect, get_object_or_404
+from django.contrib import messages
 from .models import MateriaPrima, Marca, Insumos, CompraInsumo, CompraMateriaPrima
 from .forms import MateriaPrimaForm, InsumoForm
 
@@ -13,6 +18,7 @@ def criar_materia_prima(request):
         form = MateriaPrimaForm(request.POST)
         if form.is_valid():
             form.save()
+            messages.success(request, "Matéria Prima cadastrada com sucesso!")
             return redirect('estoque:lista_materias_primas')
     else:
         form = MateriaPrimaForm()
@@ -25,6 +31,7 @@ def editar_materia_prima(request, materia_id):
         form = MateriaPrimaForm(request.POST, instance=materia)
         if form.is_valid():
             form.save()
+            messages.success(request, "Matéria Prima atualizado com sucesso!")
             return redirect('estoque:lista_materias_primas')
     else:
         form = MateriaPrimaForm(instance=materia)
@@ -47,6 +54,7 @@ def criar_insumo(request):
         form = InsumoForm(request.POST)
         if form.is_valid():
             form.save()
+            messages.success(request, "Insumo cadastrado com sucesso!")           
             return redirect('estoque:lista_insumos')        
     else:
         form = InsumoForm()
@@ -59,6 +67,7 @@ def editar_insumo(request, insumo_id):
         form = InsumoForm(request.POST, instance=insumo)
         if form.is_valid():
             form.save()
+            messages.success(request, "Insumo atualizado com sucesso!")
             return redirect('estoque:lista_insumos')
     else:
         form = InsumoForm(instance=insumo)
@@ -160,3 +169,19 @@ def deletar_compra_insumo(request, compra_id):
     compra = get_object_or_404(CompraInsumo, id=compra_id)
     compra.delete()
     return redirect('estoque:lista_compras_insumo')
+
+
+@csrf_exempt
+@require_POST
+def criar_marca_ajax(request):
+    try:
+        data = json.loads(request.body)
+        nome = data.get("nome", "").strip()
+        if not nome:
+            return JsonResponse({"success": False, "error": "Nome não fornecido"})
+
+        marca, created = Marca.objects.get_or_create(nome=nome)
+        return JsonResponse({"success": True, "nome": marca.nome})
+
+    except Exception as e:
+        return JsonResponse({"success": False, "error": str(e)})

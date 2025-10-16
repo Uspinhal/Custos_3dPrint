@@ -5,6 +5,7 @@ from estoque.models import MateriaPrima
 
 class CalculoCustosForm(forms.Form):
     TIPO_CHOICES = [
+        ('selecione','SELECIONE'),
         ('filamento', 'Filamento'), 
         ('resina', 'Resina')
         ]

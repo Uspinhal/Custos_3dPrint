@@ -9,6 +9,7 @@ urlpatterns = [
     path('materias-primas/criar/', views.criar_materia_prima, name='criar_materia_prima'),
     path('materias-primas/editar/<int:materia_id>/', views.editar_materia_prima, name='editar_materia_prima'),
     path('materias-primas/deletar/<int:materia_id>/', views.deletar_materia_prima, name='deletar_materia_prima'),
+    path('criar_marca_ajax/', views.criar_marca_ajax, name='criar_marca_ajax'),
 
     # Insumos
     path('insumos/', views.lista_insumos, name='lista_insumos'),

@@ -1,50 +1,153 @@
 {% extends "base.html" %}
 
-{% block title %}{% if materia %}Editar{% else %}Nova{% endif %} Matéria-prima{% endblock %}
+{% block title %}
+{% if materia %}Editar{% else %}Nova{% endif %} Matéria-prima
+{% endblock %}
 
 {% block content %}
-<h1>{% if materia %}Editar{% else %}Nova{% endif %} Matéria-prima</h1>
+<div class="container mt-4">
+  <h1 class="mb-4">{% if materia %}Editar{% else %}Nova{% endif %} Matéria-prima</h1>
 
-<form method="POST">
+  <form method="POST">
     {% csrf_token %}
-    <label>Nome:</label>
-    <input type="text" name="nome" value="{{ materia.nome|default:'' }}" required>
 
-    <label>Tipo:</label>
-    <select name="tipo">
-        <option value="">Selecione</option>
-        <option value="filamento" {% if materia.tipo == 'filamento' %}selected{% endif %}>Filamento</option>
-        <option value="resina" {% if materia.tipo == 'resina' %}selected{% endif %}>Resina</option>
-    </select>
+    <!-- Nome -->
+    <div class="mb-3">
+      <label for="{{ form.nome.id_for_label }}" class="form-label">{{ form.nome.label }}</label>
+      {{ form.nome }}
+    </div>
 
-    <label>Material:</label>
-    <input type="text" name="material" value="{{ materia.material|default:'' }}">
+    <!-- Tipo -->
+    <div class="mb-3">
+      <label for="{{ form.tipo.id_for_label }}" class="form-label">{{ form.tipo.label }}</label>
+      {{ form.tipo }}
+    </div>
 
-    <label>Cor:</label>
-    <input type="text" name="cor" value="{{ materia.cor|default:'' }}">
+    <!-- Material -->
+    <div class="mb-3">
+      <label for="{{ form.material.id_for_label }}" class="form-label">{{ form.material.label }}</label>
+      {{ form.material }}
+    </div>
 
-    <label>Marca:</label>
-    <select name="marca">
-        <option value="">Selecione</option>
-        {% for marca in marcas %}
-        <option value="{{ marca.id }}" {% if materia.marca and materia.marca.id == marca.id %}selected{% endif %}>{{ marca.nome }}</option>
-        {% endfor %}
-    </select>
+    <!-- Cor -->
+    <div class="mb-3">
+      <label for="{{ form.cor.id_for_label }}" class="form-label">{{ form.cor.label }}</label>
+      {{ form.cor }}
+    </div>
 
-    <label>Quantidade:</label>
-    <input type="number" step="0.01" name="quantidade" value="{{ materia.quantidade|default:0 }}">
+    <!-- Marca + botão ao lado -->
+    <div class="mb-3">
+      <label for="{{ form.marca.id_for_label }}" class="form-label">{{ form.marca.label }}</label>
+      <div class="input-group">
+        {{ form.marca }}
+        <button type="button" class="btn btn-outline-secondary" data-bs-toggle="modal" data-bs-target="#modalNovaMarca">
+          + Nova Marca
+        </button>
+      </div>
+    </div>
 
-    <label>Unidade:</label>
-    <input type="text" name="unidade" value="{{ materia.unidade|default:'kg' }}">
+    <!-- Quantidade -->
+    <div class="mb-3">
+      <label for="{{ form.quantidade.id_for_label }}" class="form-label">{{ form.quantidade.label }}</label>
+      {{ form.quantidade }}
+    </div>
 
-    <label>Estoque mínimo:</label>
-    <input type="number" step="0.01" name="estoque_minimo" value="{{ materia.estoque_minimo|default:0 }}">
+    <!-- Estoque mínimo -->
+    <div class="mb-3">
+      <label for="{{ form.estoque_minimo.id_for_label }}" class="form-label">{{ form.estoque_minimo.label }}</label>
+      {{ form.estoque_minimo }}
+    </div>
 
-    <label>Preço total (R$):</label>
-    <input type="number" step="0.01" name="preco_total" value="{{ materia.preco_total|default:0 }}">
+    <!-- Preço total -->
+    <div class="mb-3">
+      <label for="{{ form.preco_total.id_for_label }}" class="form-label">{{ form.preco_total.label }}</label>
+      {{ form.preco_total }}
+    </div>
 
-    <button type="submit" class="btn">Salvar</button>
-</form>
+    <!-- Unidade -->
+    <div class="mb-3">
+      <label for="{{ form.unidade.id_for_label }}" class="form-label">{{ form.unidade.label }}</label>
+      {{ form.unidade }}
+    </div>
+    <div class="mt-4">
+      <button type="submit" class="btn btn-success">Salvar</button>
+      <a href="{% url 'estoque:lista_materias_primas' %}" class="btn btn-secondary">← Voltar</a>
+    </div>
+  </form>
 
-<a href="{% url 'estoque:lista_materias_primas' %}" class="btn">← Voltar</a>
+    <!-- Modal Nova Marca -->
+    <div class="modal fade" id="modalNovaMarca" tabindex="-1" aria-labelledby="modalNovaMarcaLabel" aria-hidden="true">
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title" id="modalNovaMarcaLabel">Adicionar Nova Marca</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+          </div>
+          <div class="modal-body">
+            <input type="text" id="nova_marca_nome" class="form-control" placeholder="Nome da marca" required>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+            <button type="button" id="salvarMarcaBtn" class="btn btn-primary">Salvar Marca</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+  const btn = document.getElementById("salvarMarcaBtn");
+  const input = document.getElementById("nova_marca_nome");
+  const modalEl = document.getElementById("modalNovaMarca");
+
+  if (!btn) {
+    console.error("Botão salvarMarcaBtn não encontrado no DOM.");
+    return;
+  }
+
+  btn.addEventListener("click", async function () {
+    const nome = input.value.trim();
+    if (!nome) {
+      alert("Informe o nome da marca.");
+      return;
+    }
+
+    const csrfInput = document.querySelector('input[name=csrfmiddlewaretoken]');
+    const csrf = csrfInput ? csrfInput.value : '';
+
+    try {
+      const res = await fetch("{% url 'estoque:criar_marca_ajax' %}", {
+        method: "POST",
+        credentials: "same-origin",
+        headers: {
+          "Content-Type": "application/json",
+          "X-CSRFToken": csrf,
+        },
+        body: JSON.stringify({ nome })
+      });
+      const data = await res.json();
+
+      if (data.success) {
+        const select = document.getElementById("id_marca");
+        if (select) {
+          const opt = new Option(data.nome, data.id, true, true);
+          select.add(opt);
+        }
+        const modal = bootstrap.Modal.getInstance(modalEl);
+        if (modal) modal.hide();
+        input.value = "";
+      } else {
+        alert("Erro: " + (data.error || "Não foi possível salvar a marca."));
+      }
+    } catch (err) {
+      console.error(err);
+      alert("Falha na requisição AJAX.");
+    }
+  });
+});
+</script>
 {% endblock %}

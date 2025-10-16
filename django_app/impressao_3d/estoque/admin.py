@@ -65,10 +65,9 @@ class MateriaPrimaAdmin(admin.ModelAdmin):
 
 @admin.register(Insumos)
 class InsumosAdmin(admin.ModelAdmin):
-    list_display = ('nome', 'tipo', 'quantidade', 'estoque_minimo', 'preco_total', 'preco_unitario', 'unidade',"preco_unitario_display")
+    list_display = ('nome', 'tipo', 'categoria', 'preco_unitario', 'peso_no_calculo')
     list_filter = ('tipo',)
-    search_fields = ('nome', 'tipo')
-    readonly_fields = ("preco_unitario_display",)
+    search_fields = ('nome',)
     inlines = [CompraInsumoInline]
     def preco_unitario_display(self, obj):
         return f"R$ {obj.preco_unitario:.2f}" if obj.preco_unitario else "-"

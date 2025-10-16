@@ -22,8 +22,8 @@
             <td>{{ c.preco_total|floatformat:2 }}</td>
             <td>{{ c.preco_unitario|floatformat:2 }}</td>
             <td>
-                <a href="{% url 'estoque:editar_compra_insumos' c.id %}" class="btn btn-sm btn-warning">Editar</a>
-                <a href="{% url 'estoque:deletar_compra_insumos' c.id %}" class="btn btn-sm btn-danger"
+                <a href="{% url 'estoque:editar_compra_insumo' c.id %}" class="btn btn-sm btn-warning">Editar</a>
+                <a href="{% url 'estoque:deletar_compra_insumo' c.id %}" class="btn btn-sm btn-danger"
                 onclick="return confirm('Deseja realmente excluir esta compra?')">Excluir</a>
             </td>            
         </tr>
@@ -32,4 +32,5 @@
         {% endfor %}
     </tbody>
 </table>
+<a href="{% url 'estoque:lista_insumos' %}" class="btn">← Voltar</a>
 {% endblock %}

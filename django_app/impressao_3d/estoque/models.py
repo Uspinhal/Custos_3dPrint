@@ -71,9 +71,15 @@ class Insumos(models.Model):
                 ('energia', 'Energia'),
                 ('outros', 'Outros'),
     ]
+    TIPOS_USO = [
+                ('resina', 'Impressão com Resina'),
+                ('filamento', 'Impressão com Filamento'),
+                ('geral', 'Uso Geral'),
+    ]
 
     nome = models.CharField(max_length=100)
-    tipo = models.CharField(max_length=20, choices=TIPO_INSUMO, blank=True, null=True)
+    categoria = models.CharField(max_length=20, choices=TIPO_INSUMO, blank=True, null=True)
+    tipo = models.CharField(max_length=20, choices=TIPOS_USO, blank=False, null=True )
     descricao = models.TextField(blank=True, null=True)
     quantidade = models.FloatField(help_text="Quantidade total comprada (em unidades, kg, L etc.)")
     unidade = models.CharField(max_length=20, default='unidade', help_text="Ex: g, kg, ml, kWh")
@@ -81,6 +87,7 @@ class Insumos(models.Model):
 
     preco_total = models.FloatField(default=0, help_text="Preço total pago na compra (R$)")
     preco_unitario = models.FloatField(editable=False, default=0, help_text="Preço por unidade (R$/unidade, R$/kg, R$/L, etc.)")
+    peso_no_calculo = models.FloatField(default=1)
     class Meta:
         verbose_name = "Insumo"
         verbose_name_plural = "Insumos"

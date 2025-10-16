@@ -3,46 +3,55 @@
 {% block title %}Insumos{% endblock %}
 
 {% block content %}
-<h1>Insumos</h1>
-<a class="btn" href="{% url 'estoque:criar_insumo' %}">+ Novo Insumo</a>
-<a href="{% url 'estoque:lista_compras_insumo' %}" class="btn btn-outline-primary mb-3">Ver Histórico de Compras</a>
+<div class="container-fluid">
+    <h1 class="mb-4">Insumos</h1>
+    <a href="{% url 'estoque:criar_insumo' %}" class="btn btn-primary mb-3">
+        <i class="bi bi-plus-lg"></i> Novo Insumo
+    </a>
+    <a href="{% url 'estoque:lista_compras_insumo' %}" class="btn btn-outline-primary mb-3">Ver Histórico de Compras</a>
+
+    <table class="table table-dark table-striped align-middle">
+        <thead>
+            <tr>
+                <th>Nome</th>
+                <th>Tipo</th>
+                <th>Categoria</th>
+                <th>Descrição</th>
+                <th>Quantidade</th>
+                <th>Unidade</th>
+                <th>Estoque mínimo</th>
+                <th>Preço Unitário (R$)</th>
+                <th>Peso</th>
+                <th>Ações</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for i in insumos %}
+            <tr>
+                <td>{{ i.nome }}</td>
+                <td>{{ i.tipo }}</td>
+                <td>{{ i.categoria }}</td>
+                <td>{{ i.descricao }}</td>
+                <td>{{ i.quantidade }}</td>
+                <td>{{ i.unidade }}</td>
+                <td>{{ i.estoque_minimo }}</td>
+                <td>{{ i.preco_unitario|floatformat:2 }}</td>
+                <td>{{ i.peso_no_calculo }}</td>
+                <td>
+                    <a href="{% url 'estoque:editar_insumo' i.id %}">Editar</a>
+                    <a href="{% url 'estoque:deletar_insumo' i.id %}" 
+                    onclick="return confirm('Tem certeza que deseja excluir este insumo?');">
+                    Excluir
+                    </a>
+                </td>
+            </tr>
+            {% empty %}
+            <tr><td colspan="8">Nenhum insumo cadastrado.</td></tr>
+            {% endfor %}
+        </tbody>       
+    </table>
 
 
-<table border="1" cellpadding="8" cellspacing="0" style="margin-top: 20px; width: 100%; border-collapse: collapse;">
-    <thead>
-        <tr>
-            <th>Nome</th>
-            <th>Tipo</th>
-            <th>Descrição</th>
-            <th>Quantidade</th>
-            <th>Unidade</th>
-            <th>Estoque mínimo</th>
-            <th>Preço Unitário (R$)</th>
-            <th>Ações</th>
-        </tr>
-    </thead>
-    <tbody>
-        {% for i in insumos %}
-        <tr>
-            <td>{{ i.nome }}</td>
-            <td>{{ i.tipo }}</td>
-            <td>{{ i.descricao }}</td>
-            <td>{{ i.quantidade }}</td>
-            <td>{{ i.unidade }}</td>
-            <td>{{ i.estoque_minimo }}</td>
-            <td>{{ i.preco_unitario|floatformat:2 }}</td>
-            <td>
-                <a href="{% url 'estoque:editar_insumo' i.id %}">Editar</a>
-                <a href="{% url 'estoque:deletar_insumo' i.id %}" 
-                   onclick="return confirm('Tem certeza que deseja excluir este insumo?');">
-                   Excluir
-                </a>
-            </td>
-        </tr>
-        {% empty %}
-        <tr><td colspan="8">Nenhum insumo cadastrado.</td></tr>
-        {% endfor %}
-    </tbody>
-</table>
+</div>
 <a href="{% url 'core:home' %}" class="btn">← Voltar</a>
 {% endblock %}

@@ -7,26 +7,15 @@
 
 <form method="POST">
     {% csrf_token %}
-    <label>Nome:</label>
-    <input type="text" name="nome" value="{{ insumo.nome|default:'' }}" required>
+    {{ form.as_p }}
 
-    <label>Tipo:</label>
-    <select name="tipo">
-        <option value="">Selecione</option>
-        <option value="consumivel" {% if insumo.tipo == 'consumivel' %}selected{% endif %}>Consumível</option>
-        <option value="protecao" {% if insumo.tipo == 'protecao' %}selected{% endif %}>Proteção</option>
-        <option value="manutencao" {% if insumo.tipo == 'manutencao' %}selected{% endif %}>Manutenção</option>
-        <option value="energia" {% if insumo.tipo == 'energia' %}selected{% endif %}>Energia</option>
-        <option value="outros" {% if insumo.tipo == 'outros' %}selected{% endif %}>Outros</option>
-    </select>
+    <button type="submit" class="btn">Salvar</button>
+    <a href="{% url 'estoque:lista_insumos' %}" class="btn">← Voltar</a>
+</form>
 
-    <label>Descrição:</label>
-    <input type="text" name="descricao" value="{{ insumo.descricao|default:'' }}">
 
-    <label>Quantidade:</label>
-    <input type="number" step="0.01" name="quantidade" value="{{ insumo.quantidade|default:0 }}">
 
-    <label>Unidade:</label>
-    <input type="text" name="unidade" value="{{ insumo.unidade|default:'unidade' }}">
+
+ 
 
 {% endblock %}

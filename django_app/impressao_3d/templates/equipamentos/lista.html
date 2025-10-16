@@ -3,12 +3,13 @@
 {% block title %}Equipamentos{% endblock %}
 
 {% block content %}
-<h1>Equipamentos</h1>
-<a class="btn" href="{% url 'equipamentos:criar' %}">+ Novo Equipamento</a>
-
-<table border="1" cellpadding="8" cellspacing="0" style="margin-top: 20px; width: 120%; border-collapse: collapse;">
-    <thead>
-        <tr>
+<div class="container-fluid">
+    <h1 class="mb-4">Equipamentos</h1>
+    <a href="{% url 'equipamentos:criar' %}" class="btn btn-primary mb-3">
+        <i class="bi bi-plus-lg"></i> Novo Equipamento
+    </a>
+    <table class="table table-dark table-striped align-middle">
+        <thead>
             <th>Nome</th>
             <th>Modelo</th>
             <th>Tipo</th>
@@ -18,10 +19,9 @@
             <th>Custo manutenção</th>
             <th>Potência (W)</th>
             <th>Vida útil (anos)</th>
-            <th>Ações</th>
-        </tr>
-    </thead>
-    <tbody>
+            <th>Ações</th>            
+        </thead>
+            <tbody>
         {% for e in equipamentos %}
         <tr>
             <td>{{ e.nome }}</td>
@@ -48,8 +48,12 @@
         <tr><td colspan="10">Nenhum equipamento cadastrado.</td></tr>
         {% endfor %}
     </tbody>
-</table>
- <a href="{% url 'core:home' %}" class="btn">← Voltar</a>
+    </table>
+ 
+    
+</div>
+
+<a href="{% url 'core:home' %}" class="btn">← Voltar</a>
 {% endblock %}
 
 

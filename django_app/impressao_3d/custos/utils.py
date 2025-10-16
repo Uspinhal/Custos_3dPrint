@@ -9,29 +9,38 @@ class CalculadoraCustos:
 
     def custo_manutencao(self):
         if self.equipamento and self.equipamento.custo_aquisicao:
-            return float(self.equipamento.custo_aquisicao) / 2000
+            hora_maquina = self.equipamento.custo_aquisicao / 2000
+            return hora_maquina * self.tempo_horas
         return 0
 
     def custo_depreciacao(self):
-        """Calcula a depreciação anual e converte para custo por hora"""
+        """Calcula a depreciação proporcional ao tempo de impressão considerando tempo restante"""
         eq = self.equipamento
-        if eq.valor_residual == 0 or eq.vida_util_anos <= 0:
+        if not eq or eq.vida_util_anos <=0 or eq.valor_residual <=0:
             return 0
         
-        # vida útil total em horas (anos -> horas)
-        vida_util_horas = eq.vida_util_anos * 365 * 24
+        # Data de fim da vida útil
+        fim_vida_util = eq.data_aquisicao.replace(year=eq.data_aquisicao.year + eq.vida_util_anos) # type: ignore
+        hoje = date.today()
 
-        # depreciação por hora de uso
-        custo_depreciacao_total = (eq.custo_aquisicao - eq.valor_residual)
-        custo_depreciacao_hora = custo_depreciacao_total / vida_util_horas
+        # Tempo restante em dias
+        dias_restantes = (fim_vida_util - hoje).days
+        if dias_restantes <= 0:
+            return 0
+        
+        # Valor a depreciarpor hora restante
+        valor_a_depreciar = max(eq.custo_aquisicao - eq.valor_residual, 0)
+        horas_restantes = dias_restantes * 24
+        depreciacao_hora = eq.valor_residual / horas_restantes
 
-        # Depreciação proporcional ao tempo de uso
-        depreciacao_uso = custo_depreciacao_hora * self.tempo_horas
-        return round(depreciacao_uso, 2)
+        # Depreciação proporcional ao tempo de impressão
+        custo = depreciacao_hora * self.tempo_horas
+        # print(f'Depreciação: {custo}')
+        return round(custo,2)
 
     
     def custo_energia(self):
-        energia = Insumos.objects.filter(tipo='energia').first()
+        energia = Insumos.objects.filter(categoria='energia').first()
         if energia and energia.preco_unitario:
             potencia_kw = self.equipamento.potencia_watts / 1000
             return potencia_kw * self.tempo_horas * float(energia.preco_unitario)
@@ -55,14 +64,11 @@ class CalculadoraCustosResina(CalculadoraCustos):
         self.quantidade_resina = quantidade_resina_g
         self.taxa_perda = taxa_perda/100  # Convertendo porcentagem para decimal
 
-        # Buscar insumos
-        self.alcool = Insumos.objects.filter(nome__icontains='álcool').first()
-        self.luvas = Insumos.objects.filter(nome__icontains='luvas').first()
-        self.filtro = Insumos.objects.filter(nome__icontains='filtro').first()
-        self.energia = Insumos.objects.filter(tipo='energia').first()
-
         # Buscar a resina
         self.resina = MateriaPrima.objects.filter(tipo='resina').first()
+
+        # Buscar insumos relacionados à resina
+        self.insumos_resina = Insumos.objects.filter(tipo__in=['resina','geral'])
 
     def custo_resina(self):
         if self.resina and self.resina.preco_unitario:
@@ -71,13 +77,9 @@ class CalculadoraCustosResina(CalculadoraCustos):
 
     def custo_insumos(self):
         total = 0
-        if self.alcool and self.alcool.preco_unitario:
-            total += 0.10 * float(self.alcool.preco_unitario)
-        if self.luvas and self.luvas.preco_unitario:
-            total += 0.05 * float(self.luvas.preco_unitario)
-        if self.filtro and self.filtro.preco_unitario:
-            total += 0.05 * float(self.filtro.preco_unitario)
-
+        for insumo in self.insumos_resina:
+            if insumo.preco_unitario:
+                total +=(float(insumo.preco_unitario * (insumo.peso_no_calculo)))
         return total
 
     def calcular_custo_total(self):

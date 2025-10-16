@@ -5,64 +5,9 @@
 
 <form method="POST" id="equipamento-form" style="max-width:600px; margin:auto;">
     {% csrf_token %}
-    
-    <div>
-        {{ form.nome.label_tag }}
-        {{ form.nome }}
-    </div>
-    
-    <div>
-        {{ form.modelo.label_tag }}
-        {{ form.modelo }}
-    </div>
-    
-    <div>
-        {{ form.tipo.label_tag }}
-        {{ form.tipo }}
-    </div>
+    {{ form.as_p }}
 
-    <div>
-        <label for="fabricante">Fabricante:</label>
-        <select name="fabricante" id="fabricante">
-            <option value="">-- Selecione --</option>
-            {% for f in fabricantes %}
-                <option value="{{ f.id }}" {% if equipamento and equipamento.fabricante and f.id == equipamento.fabricante.id %}selected{% endif %}>{{ f.nome }}</option>
-            {% endfor %}
-        </select>
-        <a href="#" id="adicionar-fabricante-toggle" style="margin-left:10px;">+ Adicionar novo fabricante</a>
-
-        <div id="novo-fabricante-div" style="display:none; margin-top:10px;">
-            <input type="text" id="novo-fabricante" placeholder="Nome do fabricante" style="width:70%;">
-            <button type="button" id="adicionar-fabricante-btn">Adicionar</button>
-        </div>
-    </div>
-
-    <div>
-        {{ form.data_aquisicao.label_tag }}
-        {{ form.data_aquisicao }}
-    </div>
-
-    <div>
-        {{ form.custo_aquisicao.label_tag }}
-        {{ form.custo_aquisicao }}
-    </div>
-
-    <div>
-        {{ form.custo_manutencao_mensal.label_tag }}
-        {{ form.custo_manutencao_mensal }}
-    </div>
-
-    <div>
-        {{ form.potencia_watts.label_tag }}
-        {{ form.potencia_watts }}
-    </div>
-
-    <div>
-        {{ form.vida_util_anos.label_tag }}
-        {{ form.vida_util_anos }}
-    </div>
-
-    <button type="submit" style="margin-top:15px;">Salvar</button>
+    <button type="submit" class="btn">Salvar</button>
 </form>
 
 <a href="{% url 'equipamentos:lista' %}" style="display:block; margin-top:20px;">← Voltar</a>
