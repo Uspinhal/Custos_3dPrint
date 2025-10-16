@@ -15,5 +15,11 @@ __pycache__/
 .idea/
 
 # Arquivos temporários
+.env.prod
+.env.dev
 *.log
 *.tmp
+
+# pastas temporarias do Django
+staticfiles/
+media/
