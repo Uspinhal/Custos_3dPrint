@@ -6,7 +6,7 @@ def iniciar_servidor(ambiente="dev"):
     print("🚀 Iniciando servidor Django...\n")
 
     # Caminho até o diretório do manage.py
-    projeto_path = os.path.join("django_app", "impressao_3d")
+    projeto_path = os.path.join(os.getcwd(), "django_app", "impressao_3d")
     manage_py = os.path.join(projeto_path, "manage.py")
 
     # Define a variável de ambiente DJANGO_ENV
