@@ -1,6 +1,7 @@
 database.db
 db.sqlite3
-*.qsqlite3
+*.sqlite3
+Flask_old
 
 # Ambiente virtual
 .venv/

@@ -36,14 +36,24 @@
         <div class="card-body">
             <h6>Detalhamento</h6>
             <ul>
-                <li>Matéria-prima: R$ {{ breakdown.custo_materia|floatformat:2 }}</li>
+                {% if breakdown.custo_materia is not None %}
+                <li>Resina: R$ {{ breakdown.custo_materia|floatformat:2 }}</li>
+                {% endif %}
+                {% if breakdown.custo_filamento is not None %}
+                <li>Filamento: R$ {{ breakdown.custo_filamento|floatformat:2 }}</li>
+                {% endif %}
                 <li>Energia: R$ {{ breakdown.custo_energia|floatformat:2 }}</li>
                 <li>Manutenção: R$ {{ breakdown.custo_manutencao|floatformat:2 }}</li>
-                <li>Depreciação: R$ {{ breakdown.depreciacao|floatformat:2 }}</li>
+                <li>Depreciação: R$ {{ breakdown.custo_depreciacao|floatformat:2 }}</li>
                 <li>Insumos: R$ {{ breakdown.custo_insumos|floatformat:2 }}</li>
+                <li><strong>Subtotal: R$ {{ breakdown.subtotal|floatformat:2 }}</strong></li>
                 <li>Pós-processamento: R$ {{ breakdown.custo_pos_processamento|floatformat:2 }}</li>
+                {% if breakdown.custo_perda %}
                 <li>Perda: R$ {{ breakdown.custo_perda|floatformat:2 }}</li>
+                {% endif %}
             </ul>
+            <hr>
+            <p><strong>Custo Total: R$ {{ breakdown.custo_total|floatformat:2 }}</strong></p>
         </div>
     </div>
     {% endif %}

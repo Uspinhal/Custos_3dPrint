@@ -39,7 +39,7 @@ class Equipamento(models.Model):
         return self.nome
     
     def calcular_valor_residual(self):
-        """Calcula o valor residual baseado na vida útil e custo de aquisição"""
+        """Calcula o valor atual do equipamento baseado na depreciação linear."""
         if not self.data_aquisicao or self.vida_util_anos <= 0:
             return self.custo_aquisicao
 
@@ -50,15 +50,19 @@ class Equipamento(models.Model):
         # Evita valor negativo
         return round(max(valor_atual, 0), 2)
     
+    def custo_manutencao(self):
+        """Retorna o custo de manutenção por hora.
+        Para Resina: calculado a partir do custo de aquisição (custo_aquisicao / 2000).
+        Para outros tipos: usa o valor informado em custo_manutencao_mensal.
+        Não modifica atributos do objeto — apenas calcula e retorna.
+        """
+        if self.tipo == 'Resina':
+            self.custo_manutencao_mensal = round(self.custo_aquisicao/2000, 2)  # Custo fixo mensal para equipamentos de resina
+        return round(max(self.custo_manutencao_mensal, 0), 2)
+
 
     def save(self, *args, **kwargs):
-        # Atualiza automaticamente o valor_residual ao salvar
+        # Atualiza valor_residual ao salvar (custo_manutencao_mensal só é persistido
+        # para tipos não-Resina; para Resina é sempre calculado dinamicamente)
         self.valor_residual = self.calcular_valor_residual()
-        self.custo_manutencao_mensal = self.custo_manutencao()
         super().save(*args, **kwargs)
-
-    def custo_manutencao(self):
-        """Calcula o custo total de manutenção para um número dado de meses"""
-        if self.tipo == 'Resina':
-            self.custo_manutencao_mensal = self.custo_aquisicao/2000  # Custo fixo mensal para equipamentos de resina
-        return round(max(self.custo_manutencao_mensal, 0), 2)
