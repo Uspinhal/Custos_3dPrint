@@ -1,5 +1,5 @@
 from django.db import models
-from datetime import date
+from datetime import date, datetime
 
 # Create your models here.
 class Fabricante(models.Model):
@@ -37,6 +37,19 @@ class Equipamento(models.Model):
 
     def __str__(self):
         return self.nome
+
+    def _data_aquisicao_como_date(self):
+        """Retorna data_aquisicao como objeto date, seja str ou date.
+        Evita TypeError quando o campo ainda não foi convertido pelo Django
+        (ex: ao chamar .create() com data como string nos testes).
+        """
+        d = self.data_aquisicao
+        if d is None:
+            return None
+        if isinstance(d, str):
+            return datetime.strptime(d, "%Y-%m-%d").date()
+        return d    
+
     
     def calcular_valor_residual(self):
         """Calcula o valor atual do equipamento baseado na depreciação linear."""

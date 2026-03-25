@@ -64,13 +64,17 @@ class CalculadoraCustos:
         raise NotImplementedError("Essa função deve ser implementada nas classes filhas")
 
 class CalculadoraCustosResina(CalculadoraCustos):
-    def __init__(self, equipamento_id, quantidade_resina_g, tempo_horas, taxa_perda=0.0):
+    def __init__(self, equipamento_id, quantidade_resina_g, tempo_horas, taxa_perda=0.0, materia_prima_id=None):
         super().__init__(equipamento_id, tempo_horas)
         self.quantidade_resina = quantidade_resina_g
         self.taxa_perda = taxa_perda/100  # Convertendo porcentagem para decimal
 
         # Buscar a resina
-        self.resina = MateriaPrima.objects.filter(tipo='resina').first()
+        # Usa a matéria-prima selecionada pelo usuário; fallback para a primeira do tipo
+        if materia_prima_id:
+            self.resina = MateriaPrima.objects.filter(id=materia_prima_id, tipo='resina').first()
+        else:    
+            self.resina = MateriaPrima.objects.filter(tipo='resina').first()
 
         # Buscar insumos relacionados à resina
         self.insumos_resina = Insumos.objects.filter(tipo__in=['resina','geral'])
@@ -110,6 +114,7 @@ class CalculadoraCustosResina(CalculadoraCustos):
 
     
         return {
+            "tipo": "resina",
             "custo_resina": custo_materia,
             "custo_insumos": custo_insumos,
             "custo_manutencao": custo_manutencao,
@@ -122,7 +127,7 @@ class CalculadoraCustosResina(CalculadoraCustos):
         }
 
 class CalculadoraCustosFilamento(CalculadoraCustos):
-    def __init__(self, equipamento_id, quantidade_filamento_g, tempo_horas):
+    def __init__(self, equipamento_id, quantidade_filamento_g, tempo_horas, materia_prima_id=None):
         super().__init__(equipamento_id, tempo_horas)
         
         
@@ -133,7 +138,10 @@ class CalculadoraCustosFilamento(CalculadoraCustos):
         # Outros insumos específicos do filamento podem ser adicionados
 
         # Buscar o filamento como matéria-prima
-        self.filamento = MateriaPrima.objects.filter(tipo='filamento').first()
+        if materia_prima_id:
+            self.filamento = MateriaPrima.objects.filter(id=materia_prima_id, tipo='filamento').first()
+        else:
+            self.filamento = MateriaPrima.objects.filter(tipo='filamento').first()
 
     def custo_filamento(self):
         if self.filamento and self.filamento.preco_unitario:
@@ -167,6 +175,7 @@ class CalculadoraCustosFilamento(CalculadoraCustos):
         custo_total = round(subtotal + custo_pos_processamento, 2)
 
         return {
+            "tipo": "filamento",
             "custo_filamento": custo_filamento,
             "custo_energia": custo_energia,
             "custo_manutencao": custo_manutencao,

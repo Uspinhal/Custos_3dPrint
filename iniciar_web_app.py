@@ -75,13 +75,16 @@ def iniciar_servidor(ambiente):
 
     # Comando para rodar o servidor
     if ambiente == "dev":
-        comando = [sys.executable, manage_py, "runserver"]
+        comando = [sys.executable, manage_py, "runserver", "0.0.0.0:8000"]
     else:
         comando = [sys.executable, manage_py, "runserver", "0.0.0.0:8000"]
 
     # Executa o comando no diretório do projeto (passando env)
     print("🚀 Iniciando servidor Django...")
-    subprocess.run(comando, cwd=projeto_path, env=subprocess_env)
+    try:
+        subprocess.run(comando, cwd=projeto_path, env=subprocess_env)
+    except KeyboardInterrupt:
+        print("\n👋 Servidor encerrado.")
 
 if __name__ == "__main__":
     print("Selecione o ambiente:\n1️⃣  Desenvolvimento\n2️⃣  Produção Local\n")

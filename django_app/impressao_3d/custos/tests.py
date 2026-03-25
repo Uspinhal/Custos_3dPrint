@@ -1,18 +1,22 @@
+from datetime import date
 from django.test import TestCase
 from custos.utils import CalculadoraCustosResina, CalculadoraCustosFilamento
+from custos.forms import TempoImpressaoField
 from equipamentos.models import Equipamento
 from estoque.models import MateriaPrima, Insumos
 
 
 class CalculadoraCustosTest(TestCase):
     def setUp(self):
+        # Usar date() em vez de string evita TypeError no save() do modelo,
+        # que chama calcular_valor_residual() antes da conversão automática do Django.
         self.equipamento = Equipamento.objects.create(
             nome="Impressora Teste",
             tipo="Resina",
             potencia_watts=100,
             custo_aquisicao=2000,
             vida_util_anos=5,
-            data_aquisicao="2022-01-01",
+            data_aquisicao=date(2022, 1, 1),
         )
 
         # FIX: campo correto é preco_total, não preco
@@ -92,3 +96,41 @@ class CalculadoraCustosTest(TestCase):
             tempo_horas=3,
         )
         self.assertEqual(calc.calcular_custo_total(), calc.detalhar_custos()["custo_total"])
+
+
+class TempoImpressaoFieldTest(TestCase):
+    def setUp(self):
+        self.field = TempoImpressaoField(required=False)
+
+    def _conv(self, valor) -> float:
+        result = self.field.to_python(valor)
+        assert result is not None, f"Conversão retornou None para '{valor}'"
+        return result
+
+    def test_formato_hhmm(self):
+        self.assertAlmostEqual(self._conv("2:30"), 2.5)
+    
+    def test_formato_com_zero(self):
+        self.assertAlmostEqual(self._conv("1:05"), 1 + 5 / 60)
+ 
+    def test_so_minutos(self):
+        self.assertAlmostEqual(self._conv("0:45"), 0.75)
+ 
+    def test_formato_decimal(self):
+        self.assertAlmostEqual(self._conv("2.5"), 2.5)
+ 
+    def test_formato_decimal_virgula(self):
+        self.assertAlmostEqual(self._conv("1,5"), 1.5)
+ 
+    def test_formato_com_h(self):
+        self.assertAlmostEqual(self._conv("2h30"), 2.5)
+ 
+    def test_minutos_invalidos(self):
+        with self.assertRaises(Exception):
+            self._conv("2:60")
+ 
+    def test_formato_invalido(self):
+        with self.assertRaises(Exception):
+            self._conv("duas horas")
+   
+ 
