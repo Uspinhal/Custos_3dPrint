@@ -70,8 +70,8 @@ class Equipamento(models.Model):
         Não modifica atributos do objeto — apenas calcula e retorna.
         """
         if self.tipo == 'Resina':
-            #self.custo_manutencao_mensal = round(self.custo_aquisicao/2000, 2)  # Custo fixo mensal para equipamentos de resina
-            return round(self.custo_aquisicao / 2000, 2)
+            return round(self.custo_aquisicao/2000, 2)  # Custo fixo mensal para equipamentos de resina
+        return round(max(self.custo_manutencao_mensal, 0), 2)
 
 
     def save(self, *args, **kwargs):
