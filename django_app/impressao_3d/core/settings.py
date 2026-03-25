@@ -11,27 +11,54 @@ https://docs.djangoproject.com/en/5.2/ref/settings/
 """
 
 from pathlib import Path
-import rest_framework
-
-from dotenv import load_dotenv
 import os
+from dotenv import load_dotenv
 
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
-env_file = ".env.dev" if os.getenv("DJANGO_ENV") == "development" else ".env.prod"
-load_dotenv(BASE_DIR / env_file)
+
+
+# Detectar ambiente definido pelo script iniciar_web_app.py
+DJANGO_ENV = os.getenv("DJANGO_ENV", "development")
+if DJANGO_ENV == "production":
+    load_dotenv(os.path.join(BASE_DIR, ".env.prod"))
+    print("🏭 Carregando ambiente de PRODUÇÃO")
+else:
+    load_dotenv(os.path.join(BASE_DIR, ".env.dev"))
+    print("🌱 Carregando ambiente de DESENVOLVIMENTO")
+
+# Variáveis do ambiente
+ENVIRONMENT = os.getenv("ENVIRONMENT", "development")
+DB_NAME = os.getenv("DB_NAME", "db_dev.sqlite3")
+SECRET_KEY = os.getenv("SECRET_KEY", "chave-padrao")
+DEBUG = os.getenv("DEBUG", "False") == "True"
+ALLOWED_HOSTS = os.getenv("ALLOWED_HOSTS", "").split(",")
+
+
+
+
+
+# Configuração do banco de dados
+DATABASES = {
+    "default": {
+        "ENGINE": "django.db.backends.sqlite3",
+        "NAME": BASE_DIR / DB_NAME,
+    }
+}
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/5.2/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
 # SECRET_KEY = 'django-insecure-8c*#ye6lme+(-1d58n_5$st!r3(9akh!9z!1lnyv+$z0!w9z$-'
-SECRET_KEY = os.getenv("SECRET_KEY", "chave-padrao")
+
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = os.getenv("DEBUG", "False") == "True"
-ALLOWED_HOSTS = os.getenv("ALLOWED_HOSTS", "").split(",")
+# DEBUG = os.getenv("DEBUG", "False") == "True"
+
+# ALLOWED_HOSTS = os.getenv("ALLOWED_HOSTS", "").split(",")
+
 
 # Application definition
 
@@ -50,6 +77,7 @@ INSTALLED_APPS = [
     'relatorios',
     'estoque',
     'equipamentos',
+    # Third-party
     'rest_framework',
 ]
 
@@ -86,12 +114,12 @@ WSGI_APPLICATION = 'core.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/5.2/ref/settings/#databases
 
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
-    }
-}
+# DATABASES = {
+#     'default': {
+#         'ENGINE': 'django.db.backends.sqlite3',
+#         'NAME': BASE_DIR / 'db.sqlite3',
+#     }
+# }
 
 
 # Password validation
@@ -116,9 +144,9 @@ AUTH_PASSWORD_VALIDATORS = [
 # Internationalization
 # https://docs.djangoproject.com/en/5.2/topics/i18n/
 
-LANGUAGE_CODE = 'en-us'
+LANGUAGE_CODE = 'pt-br'
 
-TIME_ZONE = 'UTC'
+TIME_ZONE = 'America/Sao_Paulo'
 
 USE_I18N = True
 

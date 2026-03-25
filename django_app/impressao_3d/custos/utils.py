@@ -8,6 +8,7 @@ class CalculadoraCustos:
         self.tempo_horas = tempo_horas
 
     def custo_manutencao(self):
+        """Calcula o custo de manutenção proporcional ao tempo de impressão"""
         if self.equipamento and self.equipamento.custo_aquisicao:
             hora_maquina = self.equipamento.custo_aquisicao / 2000
             return hora_maquina * self.tempo_horas
@@ -30,8 +31,12 @@ class CalculadoraCustos:
         
         # Valor a depreciarpor hora restante
         valor_a_depreciar = max(eq.custo_aquisicao - eq.valor_residual, 0)
+        
+        if valor_a_depreciar == 0:
+            return 0
+
         horas_restantes = dias_restantes * 24
-        depreciacao_hora = eq.valor_residual / horas_restantes
+        depreciacao_hora = valor_a_depreciar / horas_restantes
 
         # Depreciação proporcional ao tempo de impressão
         custo = depreciacao_hora * self.tempo_horas
@@ -59,13 +64,17 @@ class CalculadoraCustos:
         raise NotImplementedError("Essa função deve ser implementada nas classes filhas")
 
 class CalculadoraCustosResina(CalculadoraCustos):
-    def __init__(self, equipamento_id, quantidade_resina_g, tempo_horas, taxa_perda=0.0):
+    def __init__(self, equipamento_id, quantidade_resina_g, tempo_horas, taxa_perda=0.0, materia_prima_id=None):
         super().__init__(equipamento_id, tempo_horas)
         self.quantidade_resina = quantidade_resina_g
         self.taxa_perda = taxa_perda/100  # Convertendo porcentagem para decimal
 
         # Buscar a resina
-        self.resina = MateriaPrima.objects.filter(tipo='resina').first()
+        # Usa a matéria-prima selecionada pelo usuário; fallback para a primeira do tipo
+        if materia_prima_id:
+            self.resina = MateriaPrima.objects.filter(id=materia_prima_id, tipo='resina').first()
+        else:    
+            self.resina = MateriaPrima.objects.filter(tipo='resina').first()
 
         # Buscar insumos relacionados à resina
         self.insumos_resina = Insumos.objects.filter(tipo__in=['resina','geral'])
@@ -90,32 +99,49 @@ class CalculadoraCustosResina(CalculadoraCustos):
         return round(custo_total, 2)
     
     def detalhar_custos(self):
-        detalhes = {
-            "custo_materia": round(self.custo_resina(), 2),
-            "custo_insumos": round(self.custo_insumos(), 2),
-            "custo_manutencao": round(self.custo_manutencao(), 2),
-            "custo_depreciacao": round(self.custo_depreciacao(), 2),
-            "custo_energia": round(self.custo_energia(), 2),
-            "depreciacao": round(self.custo_depreciacao(), 2),
-            'custo_perda': round(self.custo_resina() * self.taxa_perda, 2),
+
+        custo_materia = round(self.custo_resina(), 2)
+        custo_insumos = round(self.custo_insumos(), 2)
+        custo_manutencao = round(self.custo_manutencao(), 2)
+        custo_depreciacao = round(self.custo_depreciacao(), 2)
+        custo_energia = round(self.custo_energia(), 2)
+        custo_perda = round(self.custo_resina() * self.taxa_perda, 2)
+
+        # Subtotal sem custo_perda - igual ao usado em calcular_custo_total()
+        subtotal = round(custo_materia + custo_insumos + custo_manutencao + custo_depreciacao + custo_energia, 2)
+        custo_pos_processamento = round(self.custo_pos_processamento(subtotal), 2)
+        custo_total = round(subtotal + custo_pos_processamento + custo_perda, 2)
+
+    
+        return {
+            "tipo": "resina",
+            "custo_resina": custo_materia,
+            "custo_insumos": custo_insumos,
+            "custo_manutencao": custo_manutencao,
+            "custo_depreciacao": custo_depreciacao,
+            "custo_energia": custo_energia,
+            "custo_perda": custo_perda,
+            "subtotal": subtotal,
+            "custo_pos_processamento": custo_pos_processamento,
+            "custo_total": custo_total
         }
-        subtotal = sum(detalhes.values())
-        detalhes["subtotal"] = round(subtotal, 2)
-        detalhes["custo_pos_processamento"] = round(self.custo_pos_processamento(subtotal), 2)
-        detalhes["custo_total"] = round(self.calcular_custo_total(), 2)
-        return detalhes
 
 class CalculadoraCustosFilamento(CalculadoraCustos):
-    def __init__(self, equipamento_id, quantidade_filamento_g, tempo_horas):
+    def __init__(self, equipamento_id, quantidade_filamento_g, tempo_horas, materia_prima_id=None):
         super().__init__(equipamento_id, tempo_horas)
+        
+        
         self.quantidade_filamento = quantidade_filamento_g
 
         # Buscar insumos específicos
-        self.energia = Insumos.objects.filter(tipo='energia').first()
+        # Nota: energia já é tratada pela classe base via custo_energia()
         # Outros insumos específicos do filamento podem ser adicionados
 
         # Buscar o filamento como matéria-prima
-        self.filamento = MateriaPrima.objects.filter(tipo='filamento').first()
+        if materia_prima_id:
+            self.filamento = MateriaPrima.objects.filter(id=materia_prima_id, tipo='filamento').first()
+        else:
+            self.filamento = MateriaPrima.objects.filter(tipo='filamento').first()
 
     def custo_filamento(self):
         if self.filamento and self.filamento.preco_unitario:
@@ -123,27 +149,38 @@ class CalculadoraCustosFilamento(CalculadoraCustos):
         return 0
 
     def custo_insumos(self):
-        total = 0
-        if self.energia and self.energia.preco_unitario:
-            potencia_kw = self.equipamento.potencia_watts / 1000
-            total += potencia_kw * self.tempo_horas * float(self.energia.preco_unitario)
-        return total
+        # Exemplo: se houver insumos específicos para filamento, eles podem ser calculados aqui
+        # Por enquanto, vamos assumir que não há insumos adicionais além da energia, que é tratada na classe base
+        return 0    
 
     def calcular_custo_total(self):
-        subtotal = self.custo_filamento() + self.custo_insumos() + \
-                   self.custo_manutencao() + self.custo_depreciacao()
+        subtotal = (self.custo_filamento()
+                    + self.custo_energia()
+                    + self.custo_insumos() 
+                    + self.custo_manutencao() 
+                    + self.custo_depreciacao()
+                    )
+        
         custo_total = subtotal + self.custo_pos_processamento(subtotal)
         return round(custo_total, 2)
     
     def detalhar_custos(self):
-        detalhes = {
-            "custo_filamento": round(self.custo_filamento(), 2),
-            "custo_insumos": round(self.custo_insumos(), 2),
-            "custo_manutencao": round(self.custo_manutencao(), 2),
-            "custo_depreciacao": round(self.custo_depreciacao(), 2),
+        custo_filamento = round(self.custo_filamento(), 2)
+        custo_energia = round(self.custo_energia(), 2)
+        custo_manutencao = round(self.custo_manutencao(), 2)
+        custo_depreciacao = round(self.custo_depreciacao(), 2)
+
+        subtotal = round(custo_filamento + custo_energia + custo_manutencao + custo_depreciacao, 2)
+        custo_pos_processamento = round(self.custo_pos_processamento(subtotal), 2)
+        custo_total = round(subtotal + custo_pos_processamento, 2)
+
+        return {
+            "tipo": "filamento",
+            "custo_filamento": custo_filamento,
+            "custo_energia": custo_energia,
+            "custo_manutencao": custo_manutencao,
+            "custo_depreciacao": custo_depreciacao,
+            "subtotal": subtotal,
+            "custo_pos_processamento": custo_pos_processamento,
+            "custo_total": custo_total
         }
-        subtotal = sum(detalhes.values())
-        detalhes["subtotal"] = round(subtotal, 2)
-        detalhes["custo_pos_processamento"] = round(self.custo_pos_processamento(subtotal), 2)
-        detalhes["custo_total"] = round(self.calcular_custo_total(), 2)
-        return detalhes

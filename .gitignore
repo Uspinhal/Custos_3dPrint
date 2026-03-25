@@ -1,6 +1,8 @@
 database.db
 db.sqlite3
-*.qsqlite3
+*.sqlite3
+Flask_old
+limpar_cache.py
 
 # Ambiente virtual
 .venv/

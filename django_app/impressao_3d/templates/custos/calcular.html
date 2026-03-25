@@ -16,7 +16,14 @@
                     <div class="col-md-4">{{ form.equipamento.label_tag }} {{ form.equipamento }}</div>
                     <div class="col-md-4">{{ form.materia_prima.label_tag }} {{ form.materia_prima }}</div>
                     <div class="col-md-4">{{ form.quantidade.label_tag }} {{ form.quantidade }}</div>
-                    <div class="col-md-4">{{ form.tempo_horas.label_tag }} {{ form.tempo_horas }}</div>
+                    <div class="col-md-4">
+                        {{ form.tempo_horas.label_tag }} 
+                        {{ form.tempo_horas }}
+                        <div class="form-text text-muted">Formato do fatiador: H:MM (ex: 2:30). Decimal também funciona (ex: 2.5).</div>
+                        {% if form.tempo_horas.errors %}
+                            <div class="text-danger small">{{ form.tempo_horas.errors }}</div>
+                        {% endif %}
+                    </div>
                     <div class="col-md-4">{{ form.taxa_perda.label_tag }} {{ form.taxa_perda }}</div>
                 </div>
 
@@ -36,14 +43,24 @@
         <div class="card-body">
             <h6>Detalhamento</h6>
             <ul>
-                <li>Matéria-prima: R$ {{ breakdown.custo_materia|floatformat:2 }}</li>
+                {% if breakdown.tipo == "resina" %}
+                <li>Resina: R$ {{ breakdown.custo_resina|floatformat:2 }}</li>
+                {% endif %}
+                {% if breakdown.tipo == "filamento" %}
+                <li>Filamento: R$ {{ breakdown.custo_filamento|floatformat:2 }}</li>
+                {% endif %}
                 <li>Energia: R$ {{ breakdown.custo_energia|floatformat:2 }}</li>
                 <li>Manutenção: R$ {{ breakdown.custo_manutencao|floatformat:2 }}</li>
-                <li>Depreciação: R$ {{ breakdown.depreciacao|floatformat:2 }}</li>
+                <li>Depreciação: R$ {{ breakdown.custo_depreciacao|floatformat:2 }}</li>
                 <li>Insumos: R$ {{ breakdown.custo_insumos|floatformat:2 }}</li>
+                <li><strong>Subtotal: R$ {{ breakdown.subtotal|floatformat:2 }}</strong></li>
                 <li>Pós-processamento: R$ {{ breakdown.custo_pos_processamento|floatformat:2 }}</li>
+                {% if breakdown.custo_perda %}
                 <li>Perda: R$ {{ breakdown.custo_perda|floatformat:2 }}</li>
+                {% endif %}
             </ul>
+            <hr>
+            <p><strong>Custo Total: R$ {{ breakdown.custo_total|floatformat:2 }}</strong></p>
         </div>
     </div>
     {% endif %}

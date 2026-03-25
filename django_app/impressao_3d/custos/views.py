@@ -14,6 +14,10 @@ from estoque.models import MateriaPrima, Insumos
 def calcular_custo_view(request):
     result = None
     breakdown = {}
+    tipo = None
+
+    # Tipo vindo da URL (?tipo=resina) para filtrar os dropdowns antes do POST
+    tipo_get = request.GET.get("tipo")
 
     if request.method == "POST":
         form = CalculoCustosForm(request.POST)
@@ -31,21 +35,29 @@ def calcular_custo_view(request):
                     quantidade_resina_g=quantidade,
                     tempo_horas=tempo_horas,
                     taxa_perda=taxa_perda,
+                    materia_prima_id=materia_prima.id
                 )
             else:
                 calculadora = CalculadoraCustosFilamento(
                     equipamento_id=equipamento.id,
                     quantidade_filamento_g=quantidade,
                     tempo_horas=tempo_horas,
+                    materia_prima_id=materia_prima.id
                 )
 
             result = calculadora.calcular_custo_total()
             breakdown = calculadora.detalhar_custos()
 
     else:
-        form = CalculoCustosForm(request.GET or None)
+        # Passa tipo do GET para o form para filtrar equipamentos e matérias-primas
+        form = CalculoCustosForm(initial={"tipo": tipo_get}, tipo=tipo_get)
 
-    return render(request, "custos/calcular.html", {"form": form, "result": result, "breakdown": breakdown})
+    return render(request, "custos/calcular.html", {
+        "form": form, 
+        "result": result, 
+        "breakdown": breakdown,
+        "tipo": tipo,
+        })
 
 
 
