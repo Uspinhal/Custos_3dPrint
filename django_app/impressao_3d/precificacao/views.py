@@ -2,6 +2,7 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
 from .models import Orcamento
 from .forms import OrcamentoForm
+from urllib.parse import quote
 
 
 def lista_orcamentos(request):
@@ -47,7 +48,21 @@ def editar_orcamento(request, orcamento_id):
 
 def detalhe_orcamento(request, orcamento_id):
     orcamento = get_object_or_404(Orcamento, id=orcamento_id)
-    return render(request, 'precificacao/detalhe.html', {'orcamento': orcamento})
+    nome = orcamento.cliente_nome or "cliente"
+    msg = (
+        f"Olá *{nome}*! Segue o orçamento para *{orcamento.descricao}*:\n\n"
+        f" - Valor Total: *R$ {orcamento.preco_final:.2f}*\n\n"
+        f"Qualquer dúvida estou à disposição!\n\n"
+        f"(ESSA MENSAGEM É UM TESTE AUTOMÁTICO, NÃO RESPONDA)"
+    )
+
+    if orcamento.cliente_telefone:
+        whatsapp_url = f"https://wa.me/55{orcamento.cliente_telefone}?text={quote(msg)}"
+    else:
+        whatsapp_url = f"https://wa.me/?text={quote(msg)}"
+    
+    return render(request, 'precificacao/detalhe.html', 
+                  {'orcamento': orcamento, 'whatsapp_url': whatsapp_url})
 
 
 def deletar_orcamento(request, orcamento_id):

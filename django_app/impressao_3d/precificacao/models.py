@@ -45,6 +45,10 @@ class Orcamento(models.Model):
     # Observações
     observacoes     = models.TextField(blank=True, null=True)
 
+    # Contato do cliente (temporário até módulo de clientes)
+    cliente_nome     = models.CharField(max_length=100, blank=True, null=True, help_text="Nome do cliente")
+    cliente_telefone = models.CharField(max_length=20, blank=True, null=True, help_text="Ex: 11999999999 (só números)")
+
     class Meta:
         verbose_name = "Orçamento"
         verbose_name_plural = "Orçamentos"

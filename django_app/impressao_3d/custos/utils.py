@@ -66,7 +66,7 @@ class CalculadoraCustos:
 class CalculadoraCustosResina(CalculadoraCustos):
     def __init__(self, equipamento_id, quantidade_resina_g, tempo_horas, taxa_perda=0.0, materia_prima_id=None):
         super().__init__(equipamento_id, tempo_horas)
-        self.quantidade_resina = quantidade_resina_g
+        self.quantidade_resina = quantidade_resina_g * 1.15  # Garantindo que seja float
         self.taxa_perda = taxa_perda/100  # Convertendo porcentagem para decimal
 
         # Buscar a resina

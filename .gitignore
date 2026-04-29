@@ -3,6 +3,7 @@ db.sqlite3
 *.sqlite3
 Flask_old
 limpar_cache.py
+*.bat
 
 # Ambiente virtual
 .venv/

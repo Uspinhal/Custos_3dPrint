@@ -16,6 +16,8 @@ class OrcamentoForm(forms.ModelForm):
             'taxa_cartao',
             'status',
             'observacoes',
+            'cliente_nome',
+            'cliente_telefone',
         ]
         widgets = {
             'descricao':       forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Ex: Miniatura Guerreiro 32mm'}),
@@ -28,6 +30,8 @@ class OrcamentoForm(forms.ModelForm):
             'taxa_cartao':     forms.NumberInput(attrs={'class': 'form-control', 'step': '0.01'}),
             'status':          forms.Select(attrs={'class': 'form-select'}),
             'observacoes':     forms.Textarea(attrs={'class': 'form-control', 'rows': 3}),
+            'cliente_nome':     forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Ex: João Silva'}),
+            'cliente_telefone': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Ex: 11999999999 (só números)'}),
         }
         labels = {
             'descricao':       'Descrição do produto',
@@ -40,6 +44,8 @@ class OrcamentoForm(forms.ModelForm):
             'taxa_cartao':     'Taxa do cartão (%)',
             'status':          'Status',
             'observacoes':     'Observações',
+            'cliente_nome':     'Nome do cliente',
+            'cliente_telefone': 'Telefone (WhatsApp)',
         }
         help_texts = {
             'custo_impressao': 'Cole aqui o valor calculado na tela de Calcular Custo.',

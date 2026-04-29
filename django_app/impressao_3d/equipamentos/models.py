@@ -71,7 +71,16 @@ class Equipamento(models.Model):
         """
         if self.tipo == 'Resina':
             self.custo_manutencao_mensal = round(self.custo_aquisicao/2000, 2)  # Custo fixo mensal para equipamentos de resina
+        if self.tipo == 'Filamento':
+            self.custo_manutencao_mensal = round(self.custo_aquisicao/5000, 2)  # Custo fixo mensal para equipamentos de filamento
+        if self.tipo == 'Wash & Cure':
+            self.custo_manutencao_mensal = round(self.custo_aquisicao/300, 2)  # Custo fixo mensal para equipamentos de Wash & Cure
+        
         return round(max(self.custo_manutencao_mensal, 0), 2)
+    
+        
+        
+
 
 
     def save(self, *args, **kwargs):

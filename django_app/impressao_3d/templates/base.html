@@ -95,6 +95,9 @@
     <a href="{% url 'calcular_custo_form' %}" class="{% if '/custos' in request.path %}active{% endif %}">
       <i class="bi bi-calculator"></i> Calcular Custo
     </a>
+    <a href="{% url 'precificacao:lista' %}" class="{% if '/orcamentos' in request.path %}active{% endif %}">
+      <i class="bi bi-tag"></i> Orçamentos
+    </a>
     <hr class="border-secondary">
   </div>
 

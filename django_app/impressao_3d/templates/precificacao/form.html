@@ -1,0 +1,147 @@
+{% extends "base.html" %}
+
+{% block title %}{{ titulo }}{% endblock %}
+
+{% block content %}
+<div class="container" style="max-width: 700px;">
+    <h1 class="mb-4">{{ titulo }}</h1>
+    <a href="{% url 'calcular_custo_form' %}" class="btn btn-outline-secondary btn-sm mb-3">
+        <i class="bi bi-calculator"></i> ← Calcular custo antes de orçar
+    </a>
+    <form method="POST">
+        {% csrf_token %}
+
+        <div class="card mb-3">
+            <div class="card-header">Identificação</div>
+            <div class="card-body row g-3">
+                <div class="col-md-6">
+                    <label class="form-label">
+                        {{ form.cliente_nome.label }}
+                    </label>
+                    {{ form.cliente_nome }}
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label">{{ form.cliente_telefone.label }}</label>
+                    {{ form.cliente_telefone }}
+                </div>
+                <div class="col-12">
+                    <label class="form-label">{{ form.descricao.label }}</label>
+                    {{ form.descricao }}
+                    {% if form.descricao.help_text %}
+                        <div class="form-text">{{ form.descricao.help_text }}</div>
+                    {% endif %}
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label">{{ form.tipo_impressao.label }}</label>
+                    {{ form.tipo_impressao }}
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label">{{ form.status.label }}</label>
+                    {{ form.status }}
+                </div>
+            </div>
+        </div>
+
+        <div class="card mb-3">
+            <div class="card-header">Custos</div>
+            <div class="card-body row g-3">
+                <div class="col-md-4">
+                    <label class="form-label">{{ form.custo_impressao.label }}</label>
+                    {{ form.custo_impressao }}
+                    {% if form.custo_impressao.help_text %}
+                        <div class="form-text">{{ form.custo_impressao.help_text }}</div>
+                    {% endif %}
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label">{{ form.custo_modelagem.label }}</label>
+                    {{ form.custo_modelagem }}
+                    {% if form.custo_modelagem.help_text %}
+                        <div class="form-text">{{ form.custo_modelagem.help_text }}</div>
+                    {% endif %}
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label">{{ form.outros_custos.label }}</label>
+                    {{ form.outros_custos }}
+                </div>
+            </div>
+        </div>
+
+        <div class="card mb-3">
+            <div class="card-header">Precificação</div>
+            <div class="card-body row g-3">
+                <div class="col-md-4">
+                    <label class="form-label">{{ form.margem_lucro.label }}</label>
+                    {{ form.margem_lucro }}
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label">{{ form.taxa_plataforma.label }}</label>
+                    {{ form.taxa_plataforma }}
+                    {% if form.taxa_plataforma.help_text %}
+                        <div class="form-text">{{ form.taxa_plataforma.help_text }}</div>
+                    {% endif %}
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label">{{ form.taxa_cartao.label }}</label>
+                    {{ form.taxa_cartao }}
+                    {% if form.taxa_cartao.help_text %}
+                        <div class="form-text">{{ form.taxa_cartao.help_text }}</div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <div class="card mb-4">
+            <div class="card-header">Observações</div>
+            <div class="card-body">
+                {{ form.observacoes }}
+            </div>
+        </div>
+        <div class="card mb-4 border-success">
+            <div class="card-body text-center py-3">
+                <p class="text-muted mb-1 small">Preço de venda estimado</p>
+                <div id="preview-preco" class="text-success fw-bold fs-4">R$ 0,00</div>
+                <p class="text-muted small mt-1 mb-0">Atualiza automaticamente conforme você preenche</p>
+            </div>
+        </div>
+
+        <div class="d-flex gap-2">
+            <button type="submit" class="btn btn-success">Salvar</button>
+            <a href="{% url 'precificacao:lista' %}" class="btn btn-secondary">← Voltar</a>
+        </div>
+    </form>
+</div>
+<script>
+function calcularPreco() {
+    const custoImpressao = parseFloat(document.getElementById('id_custo_impressao').value) || 0;
+    const custoModelagem = parseFloat(document.getElementById('id_custo_modelagem').value) || 0;
+    const outrosCustos   = parseFloat(document.getElementById('id_outros_custos').value)   || 0;
+    const margemLucro    = parseFloat(document.getElementById('id_margem_lucro').value)    || 0;
+    const taxaPlataforma = parseFloat(document.getElementById('id_taxa_plataforma').value) || 0;
+    const taxaCartao     = parseFloat(document.getElementById('id_taxa_cartao').value)     || 0;
+
+    const custoBase = custoImpressao + custoModelagem + outrosCustos;
+    const divisor = 1 - (margemLucro / 100) - (taxaPlataforma / 100) - (taxaCartao / 100);
+
+    const previewEl = document.getElementById('preview-preco');
+    if (divisor <= 0) {
+        previewEl.textContent = 'Margem + taxas inviável (≥ 100%)';
+        previewEl.className = 'text-danger fw-bold fs-5';
+        return;
+    }
+
+    const precoFinal = custoBase / divisor;
+    previewEl.textContent = 'R$ ' + precoFinal.toFixed(2).replace('.', ',');
+    previewEl.className = 'text-success fw-bold fs-4';
+}
+
+// Observa todos os campos relevantes
+['id_custo_impressao','id_custo_modelagem','id_outros_custos',
+ 'id_margem_lucro','id_taxa_plataforma','id_taxa_cartao'].forEach(function(id) {
+    const el = document.getElementById(id);
+    if (el) el.addEventListener('input', calcularPreco);
+});
+
+// Calcula ao carregar (caso campos já venham preenchidos via GET)
+calcularPreco();
+</script>
+{% endblock %}

@@ -15,16 +15,20 @@
                     <div class="col-md-4">{{ form.tipo.label_tag }} {{ form.tipo }}</div>
                     <div class="col-md-4">{{ form.equipamento.label_tag }} {{ form.equipamento }}</div>
                     <div class="col-md-4">{{ form.materia_prima.label_tag }} {{ form.materia_prima }}</div>
-                    <div class="col-md-4">{{ form.quantidade.label_tag }} {{ form.quantidade }}</div>
-                    <div class="col-md-4">
-                        {{ form.tempo_horas.label_tag }} 
+
+                    <div class="col-md-3">{{ form.quantidade.label_tag }} {{ form.quantidade }}</div>
+                    <div class="col-md-3" id="campo-unidade-resina" style="display:none;">
+                        {{ form.unidade_resina.label_tag }} {{ form.unidade_resina }}
+                    </div>
+                    <div class="col-md-3">
+                        {{ form.tempo_horas.label_tag }}
                         {{ form.tempo_horas }}
-                        <div class="form-text text-muted">Formato do fatiador: H:MM (ex: 2:30). Decimal também funciona (ex: 2.5).</div>
+                        <div class="form-text text-muted">H:MM (ex: 2:30) ou decimal (ex: 2.5).</div>
                         {% if form.tempo_horas.errors %}
                             <div class="text-danger small">{{ form.tempo_horas.errors }}</div>
                         {% endif %}
                     </div>
-                    <div class="col-md-4">{{ form.taxa_perda.label_tag }} {{ form.taxa_perda }}</div>
+                    <div class="col-md-3">{{ form.taxa_perda.label_tag }} {{ form.taxa_perda }}</div>
                 </div>
 
                 <div class="mt-3">
@@ -37,9 +41,12 @@
 
     {% if result %}
     <div class="card">
-        <div class="card-header">
+        <div class="card-header d-flex justify-content-between align-items-center">
             <strong>Resultado: R$ {{ breakdown.custo_total|floatformat:2 }}</strong>
-        </div>
+            <a href="{% url 'precificacao:criar' %}?custo_impressao={{ breakdown.custo_total|stringformat:'.2f'  }}&tipo_impressao={{ tipo }}"
+                class="btn btn-success btn-sm">
+                <i class="bi bi-tag"></i> Usar em um Orçamento →
+            </a>
         <div class="card-body">
             <h6>Detalhamento</h6>
             <ul>
@@ -69,13 +76,25 @@
 <script>
     // Recarrega a página quando o tipo muda
     const tipoField = document.querySelector('#id_tipo');
+    const campoUnidade = document.getElementById('campo-unidade-resina');
+
+    function atualizaUnidade(){
+        if (tipoField && tipoField.value === 'resina') {
+            campoUnidade.style.display = 'block';
+        } else {
+            campoUnidade.style.display = 'none';
+        }   
+    }
+
     if (tipoField) {
         tipoField.addEventListener('change', function() {
+            atualizaUnidade();
             const val = this.value;
             const url = new URL(window.location.href);
             url.searchParams.set('tipo', val);
             window.location.href = url.toString();
         });
+        atualizaUnidade(); // Chama ao carregar para ajustar o campo
     }
 </script>
  <a href="{% url 'core:home' %}" class="btn">← Voltar</a>

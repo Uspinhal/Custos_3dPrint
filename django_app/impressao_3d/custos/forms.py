@@ -52,6 +52,11 @@ class CalculoCustosForm(forms.Form):
         ('filamento', 'Filamento'), 
         ('resina', 'Resina')
         ]
+    UNIDADE_RESINA_CHOICES = [
+        ('g', 'Gramas (g)'),
+        ('ml', 'Mililitros (ml)'),
+    ]
+
 
 
     tipo = forms.ChoiceField(choices=TIPO_CHOICES, label="Tipo de Impressão")
@@ -59,6 +64,7 @@ class CalculoCustosForm(forms.Form):
     equipamento = forms.ModelChoiceField(queryset=Equipamento.objects.none(), label="Equipamento")
     materia_prima = forms.ModelChoiceField(queryset=MateriaPrima.objects.none(), label="Matéria Prima")
     quantidade = forms.FloatField(label="Quantidade (g)", min_value=0)
+    unidade_resina = forms.ChoiceField(choices=UNIDADE_RESINA_CHOICES, label="Unidade da Resina", required=False, initial='ml', widget=forms.Select(attrs={'class': 'form-select'}))
     tempo_horas = TempoImpressaoField()
     taxa_perda = forms.FloatField(label="Taxa de Perda (%)", min_value=0, max_value=100, initial=0.0, required=False)
 

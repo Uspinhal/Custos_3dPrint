@@ -1,0 +1,101 @@
+{% extends "base.html" %}
+
+{% block title %}Orçamento — {{ orcamento.descricao }}{% endblock %}
+
+{% block content %}
+<div class="container" style="max-width: 700px;">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1>{{ orcamento.descricao }}</h1>
+        <span class="badge fs-6
+            {% if orcamento.status == 'aprovado' %}bg-success
+            {% elif orcamento.status == 'recusado' %}bg-danger
+            {% elif orcamento.status == 'enviado' %}bg-warning text-dark
+            {% else %}bg-secondary{% endif %}">
+            {{ orcamento.get_status_display }}
+        </span>
+    </div>
+
+    <div class="card mb-3">
+        <div class="card-header">Informações Gerais</div>
+        <div class="card-body">
+            <dl class="row mb-0">
+                <dt class="col-sm-5">Tipo de Impressão</dt>
+                <dd class="col-sm-7">{{ orcamento.get_tipo_impressao_display|default:"—" }}</dd>
+                <dt class="col-sm-5">Data de Criação</dt>
+                <dd class="col-sm-7">{{ orcamento.data_criacao|date:"d/m/Y" }}</dd>
+                <dt class="col-sm-5">Cliente</dt>
+                <dd class="col-sm-7">{{ orcamento.cliente_nome|default:"—" }}</dd>
+                <dt class="col-sm-5">Telefone</dt>
+                <dd class="col-sm-7">{{ orcamento.cliente_telefone|default:"—" }}</dd>
+            </dl>
+        </div>
+    </div>
+
+    <div class="card mb-3">
+        <div class="card-header">Composição de Custos</div>
+        <div class="card-body">
+            <dl class="row mb-0">
+                <dt class="col-sm-7">Custo de Impressão</dt>
+                <dd class="col-sm-5 text-end">R$ {{ orcamento.custo_impressao|floatformat:2 }}</dd>
+
+                <dt class="col-sm-7">Modelagem / STL</dt>
+                <dd class="col-sm-5 text-end">R$ {{ orcamento.custo_modelagem|floatformat:2 }}</dd>
+
+                <dt class="col-sm-7">Outros Custos</dt>
+                <dd class="col-sm-5 text-end">R$ {{ orcamento.outros_custos|floatformat:2 }}</dd>
+
+                <dt class="col-sm-7 border-top pt-2"><strong>Custo Base</strong></dt>
+                <dd class="col-sm-5 text-end border-top pt-2"><strong>R$ {{ orcamento.custo_base|floatformat:2 }}</strong></dd>
+            </dl>
+        </div>
+    </div>
+
+    <div class="card mb-3">
+        <div class="card-header">Precificação</div>
+        <div class="card-body">
+            <dl class="row mb-0">
+                <dt class="col-sm-7">Margem de Lucro</dt>
+                <dd class="col-sm-5 text-end">{{ orcamento.margem_lucro }}%</dd>
+
+                <dt class="col-sm-7">Taxa Plataforma</dt>
+                <dd class="col-sm-5 text-end">{{ orcamento.taxa_plataforma }}%</dd>
+
+                <dt class="col-sm-7">Taxa Cartão</dt>
+                <dd class="col-sm-5 text-end">{{ orcamento.taxa_cartao }}%</dd>
+            </dl>
+        </div>
+    </div>
+
+    <div class="card mb-4 border-success">
+        <div class="card-body text-center">
+            <p class="text-muted mb-1">Preço de Venda Sugerido</p>
+            <h2 class="text-success">R$ {{ orcamento.preco_final|floatformat:2 }}</h2>
+        </div>
+    </div>
+
+    {% if orcamento.observacoes %}
+    <div class="card mb-4">
+        <div class="card-header">Observações</div>
+        <div class="card-body">{{ orcamento.observacoes }}</div>
+    </div>
+    {% endif %}
+
+    {% with texto="Olá, *"|add:orcamento.cliente_nome|default:""|add:"*! Segue o orçamento para *"|add:orcamento.descricao|add:"*:%0A%0A" %}
+    {% with detalhes="Custo Base: R$ "|add:orcamento.custo_base|stringformat:'.2f'|add:"%0APreço Final: *R$ "|add:orcamento.preco_final|stringformat:'.2f'|add:"*%0A%0AQualquer dúvida estou à disposição!" %}
+
+    <div class="d-flex gap-2 flex-wrap">
+        <a href="{% url 'precificacao:editar' orcamento.id %}" class="btn btn-warning">Editar</a>
+        <a href="{% url 'precificacao:deletar' orcamento.id %}" class="btn btn-danger"
+            onclick="return confirm('Excluir este orçamento?')">Excluir
+        </a>
+        <a href="{{ whatsapp_url }}" target="_blank" class="btn btn-success">
+            <i class="bi bi-whatsapp"></i> Enviar WhatsApp
+        </a>
+
+        <a href="{% url 'precificacao:lista' %}" class="btn btn-secondary">← Voltar</a>
+    </div>
+
+    {% endwith %}
+    {% endwith %}
+</div>
+{% endblock %}

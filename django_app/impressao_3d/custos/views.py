@@ -30,9 +30,11 @@ def calcular_custo_view(request):
             taxa_perda = form.cleaned_data["taxa_perda"]
 
             if tipo == "resina":
+                unidade_resina = form.cleaned_data.get("unidade_resina", "g")
+                quantidade_g = quantidade * 1.2 if unidade_resina == "ml" else quantidade
                 calculadora = CalculadoraCustosResina(
                     equipamento_id=equipamento.id,
-                    quantidade_resina_g=quantidade,
+                    quantidade_resina_g=quantidade_g,
                     tempo_horas=tempo_horas,
                     taxa_perda=taxa_perda,
                     materia_prima_id=materia_prima.id
