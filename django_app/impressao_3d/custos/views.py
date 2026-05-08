@@ -45,8 +45,8 @@ def calcular_custo_view(request):
                 num_mesas = int(request.POST.get("num_mesas", 1))
 
                 if num_mesas == 1:
-                    quantidade_g = quantidade * 1.2 if unidade_resina == "ml" else quantidade
-                    mesas = [{'quantidade_g': float(quantidade_g), 'tempo_horas': float(tempo_horas)}]
+                    quantidade_g = float(quantidade) * 1.2 if unidade_resina == "ml" else float(quantidade)
+                    mesas = [{'quantidade_g': quantidade_g, 'tempo_horas': float(tempo_horas)}]
                 else:
                     mesas = []
                     for i in range(1, num_mesas + 1):
@@ -60,7 +60,7 @@ def calcular_custo_view(request):
                 calculadora = CalculadoraCustosResina(
                     equipamento_id=equipamento.id,
                     mesas=mesas,
-                    taxa_perda=taxa_perda,
+                    taxa_perda=float(taxa_perda),
                     materia_prima_id=materia_prima.id
                 )
             else:
