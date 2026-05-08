@@ -1,5 +1,8 @@
+from enum import unique
+
 from django.db import models
 from django.utils.timezone import now as tz_now
+from django.db.models import Max
 
 
 class Orcamento(models.Model):
@@ -20,6 +23,20 @@ class Orcamento(models.Model):
     descricao       = models.CharField(max_length=200, help_text="Ex: Miniatura Guerreiro 32mm")
     data_criacao    = models.DateField(default=tz_now)
     status          = models.CharField(max_length=20, choices=STATUS_CHOICES, default='rascunho')
+
+    # Numeração
+    numero = models.PositiveIntegerField(null=True, blank=True)  # null temporário
+    ano    = models.PositiveIntegerField(null=True, blank=True)  # null temporário
+
+    # Vínculo com o cliente
+    cliente = models.ForeignKey(
+        'clientes.Cliente', 
+        on_delete=models.PROTECT,
+        null=True, 
+        blank=True,
+        related_name='orcamentos', 
+        help_text="Deixe em branco para orçamentos sem cliente cadastrado"
+    )
 
     # Tipo de impressão (para referência)
     tipo_impressao  = models.CharField(max_length=20, choices=TIPO_IMPRESSAO, blank=True, null=True)
@@ -53,6 +70,7 @@ class Orcamento(models.Model):
         verbose_name = "Orçamento"
         verbose_name_plural = "Orçamentos"
         ordering = ['-data_criacao']
+        unique_together = [('numero', 'ano')]
 
     def calcular(self):
         """Calcula custo_base e preco_final e atualiza os campos."""
@@ -69,9 +87,23 @@ class Orcamento(models.Model):
         else:
             self.preco_final = round(self.custo_base / divisor, 2)
 
+    @property
+    def referencia(self):
+        """Gera a referência do orçamento no formato 'ANO/NUMERO'."""
+        if self.numero and self.ano:
+            return f"{self.numero:04d}/{str(self.ano)[2:]}"
+        return "—"
+    
     def save(self, *args, **kwargs):
+        if not self.pk:  # Só calcular se for um novo orçamento ou se os custos/margem/taxas foram alterados
+            self.ano = tz_now().year
+            ultimo = (Orcamento.objects.filter(ano=self.ano).aggregate(Max('numero'))['numero__max']) or 0
+            self.numero = ultimo + 1
         self.calcular()
         super().save(*args, **kwargs)
 
     def __str__(self):
-        return f"{self.descricao} — R$ {self.preco_final:.2f} ({self.get_status_display()})" #type: ignore
+        return (
+            f"[{self.referencia}] {self.descricao} "
+            f"- R$ {self.preco_final:.2f} ({self.get_status_display()})" # type: ignore
+)

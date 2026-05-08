@@ -63,10 +63,10 @@ class CalculoCustosForm(forms.Form):
     # Evitar consulta no import; usar .none() e popular no __init__
     equipamento = forms.ModelChoiceField(queryset=Equipamento.objects.none(), label="Equipamento")
     materia_prima = forms.ModelChoiceField(queryset=MateriaPrima.objects.none(), label="Matéria Prima")
-    quantidade = forms.FloatField(label="Quantidade (g)", min_value=0)
+    quantidade = forms.DecimalField(label="Quantidade", required=False, max_digits=8, decimal_places=2, min_value=0,widget=forms.NumberInput(attrs={'step': '0.01', 'min': '0'}))
     unidade_resina = forms.ChoiceField(choices=UNIDADE_RESINA_CHOICES, label="Unidade da Resina", required=False, initial='ml', widget=forms.Select(attrs={'class': 'form-select'}))
-    tempo_horas = TempoImpressaoField()
-    taxa_perda = forms.FloatField(label="Taxa de Perda (%)", min_value=0, max_value=100, initial=0.0, required=False)
+    tempo_horas = TempoImpressaoField(required=False, widget=forms.TextInput(attrs={'placeholder': 'Ex: 2:30'}))
+    taxa_perda = forms.DecimalField(label="Taxa de Perda (%)", max_digits=5, decimal_places=2, min_value=0, max_value=100, initial=0.0, required=False)
 
     def __init__(self, *args, tipo: Optional[str] = None, **kwargs):
         super().__init__(*args, **kwargs)

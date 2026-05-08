@@ -1,0 +1,66 @@
+{% extends "base.html" %}
+{% block title %}{{ titulo }}{% endblock %}
+
+{% block content %}
+<div class="mb-4">
+  <h2><i class="bi bi-person-plus"></i> {{ titulo }}</h2>
+</div>
+
+<form method="post" class="row g-3" style="max-width: 700px;">
+  {% csrf_token %}
+
+  <div class="col-md-8">
+    <label class="form-label">Nome *</label>
+    {{ form.nome }}
+  </div>
+  <div class="col-md-4">
+    <label class="form-label">WhatsApp</label>
+    {{ form.whatsapp }}
+  </div>
+  <div class="col-md-6">
+    <label class="form-label">Instagram</label>
+    {{ form.instagram }}
+  </div>
+  <div class="col-md-6">
+    <label class="form-label">Email</label>
+    {{ form.email }}
+  </div>
+  <div class="col-md-6">
+    <label class="form-label">CPF / CNPJ</label>
+    {{ form.documento }}
+  </div>
+  <div class="col-md-3">
+    <label class="form-label">Tipo</label>
+    {{ form.tipo }}
+  </div>
+  <div class="col-md-3">
+    <label class="form-label">Estágio</label>
+    {{ form.estagio }}
+  </div>
+  <div class="col-md-6">
+    <label class="form-label">Origem</label>
+    {{ form.origem }}
+  </div>
+  <div class="col-md-6">
+    <label class="form-label">Canal de Contato</label>
+    {{ form.canal }}
+  </div>
+  <div class="col-12">
+    <label class="form-label">Observações</label>
+    {{ form.observacoes }}
+  </div>
+  <div class="col-12">
+    <div class="form-check">
+      {{ form.ativo }}
+      <label class="form-check-label">Cliente ativo</label>
+    </div>
+  </div>
+
+  <div class="col-12 d-flex gap-2 mt-2">
+    <button type="submit" class="btn btn-primary">
+      <i class="bi bi-check-lg"></i> Salvar
+    </button>
+    <a href="{% url 'clientes:lista' %}" class="btn btn-outline-secondary">Cancelar</a>
+  </div>
+</form>
+{% endblock %}

@@ -82,21 +82,25 @@
     <h5 class="text-center">💻 Make It Real 3D</h5>
     
     <a href="/"><i class="bi bi-house"></i> Início</a>
-    <hr class="border-secondary">
-    <a href="{% url 'estoque:lista_materias_primas' %}" class="{% if '/materias-primas' in request.path %}active{% endif %}">
-      <i class="bi bi-box"></i> Matérias-primas
-    </a>
-    <a href="{% url 'estoque:lista_insumos' %}" class="{% if '/insumos' in request.path %}active{% endif %}">
-      <i class="bi bi-droplet-half"></i> Insumos
-    </a>
-    <a href="{% url 'equipamentos:lista' %}" class="{% if '/equipamentos' in request.path %}active{% endif %}">
-      <i class="bi bi-gear"></i> Equipamentos
-    </a>
-    <a href="{% url 'calcular_custo_form' %}" class="{% if '/custos' in request.path %}active{% endif %}">
-      <i class="bi bi-calculator"></i> Calcular Custo
-    </a>
-    <a href="{% url 'precificacao:lista' %}" class="{% if '/orcamentos' in request.path %}active{% endif %}">
-      <i class="bi bi-tag"></i> Orçamentos
+      <hr class="border-secondary">
+      <a href="{% url 'estoque:lista_materias_primas' %}" class="{% if '/materias-primas' in request.path %}active{% endif %}">
+        <i class="bi bi-box"></i> Matérias-primas
+      </a>
+      <a href="{% url 'estoque:lista_insumos' %}" class="{% if '/insumos' in request.path %}active{% endif %}">
+        <i class="bi bi-droplet-half"></i> Insumos
+      </a>
+      <a href="{% url 'equipamentos:lista' %}" class="{% if '/equipamentos' in request.path %}active{% endif %}">
+        <i class="bi bi-gear"></i> Equipamentos
+      </a>
+      <a href="{% url 'calcular_custo_form' %}" class="{% if '/custos' in request.path %}active{% endif %}">
+        <i class="bi bi-calculator"></i> Calcular Custo
+      </a>
+      <a href="{% url 'precificacao:lista' %}" class="{% if '/orcamentos' in request.path %}active{% endif %}">
+        <i class="bi bi-tag"></i> Orçamentos
+      </a>
+      <a href="{% url 'clientes:lista' %}" class="{% if '/clientes' in request.path %}active{% endif %}">
+        <i class="bi bi-people"></i> Clientes
+      </a>
     </a>
     <hr class="border-secondary">
   </div>

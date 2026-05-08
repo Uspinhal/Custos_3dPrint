@@ -5,7 +5,7 @@ from .utils import CalculadoraCustosResina, CalculadoraCustosFilamento
 
 from django.shortcuts import render
 from django.views import View
-from .forms import CalculoCustosForm
+from .forms import CalculoCustosForm, TempoImpressaoField
 from equipamentos.models import Equipamento
 from estoque.models import MateriaPrima, Insumos
 
@@ -22,6 +22,17 @@ def calcular_custo_view(request):
     if request.method == "POST":
         form = CalculoCustosForm(request.POST)
         if form.is_valid():
+            num_mesas = int(request.POST.get("num_mesas", 1))
+
+            # Campos obrigatórios apenas quando mesa única
+            if num_mesas == 1:
+                if not form.cleaned_data.get("quantidade"):
+                    form.add_error("quantidade", "Campo obrigatório.")
+                    return render(request, "custos/calcular.html", {"form": form})
+                if not form.cleaned_data.get("tempo_horas"):
+                    form.add_error("tempo_horas", "Campo obrigatório.")
+                    return render(request, "custos/calcular.html", {"form": form})
+
             tipo = form.cleaned_data["tipo"]
             equipamento = form.cleaned_data["equipamento"]
             materia_prima = form.cleaned_data["materia_prima"]
@@ -31,19 +42,44 @@ def calcular_custo_view(request):
 
             if tipo == "resina":
                 unidade_resina = form.cleaned_data.get("unidade_resina", "g")
-                quantidade_g = quantidade * 1.2 if unidade_resina == "ml" else quantidade
+                num_mesas = int(request.POST.get("num_mesas", 1))
+
+                if num_mesas == 1:
+                    quantidade_g = quantidade * 1.2 if unidade_resina == "ml" else quantidade
+                    mesas = [{'quantidade_g': float(quantidade_g), 'tempo_horas': float(tempo_horas)}]
+                else:
+                    mesas = []
+                    for i in range(1, num_mesas + 1):
+                        qtd = float(request.POST.get(f'mesa_{i}_quantidade', 0) or 0)
+                        tempo = TempoImpressaoField().to_python(request.POST.get(f'mesa_{i}_tempo', '0') or '0')
+                        quantidade_g = qtd * 1.2 if unidade_resina == "ml" else qtd
+                        mesas.append({'quantidade_g': quantidade_g, 
+                                      'tempo_horas': tempo})
+
+
                 calculadora = CalculadoraCustosResina(
                     equipamento_id=equipamento.id,
-                    quantidade_resina_g=quantidade_g,
-                    tempo_horas=tempo_horas,
+                    mesas=mesas,
                     taxa_perda=taxa_perda,
                     materia_prima_id=materia_prima.id
                 )
             else:
+                num_mesas = int(request.POST.get("num_mesas", 1))
+                
+                if num_mesas == 1:
+                    mesas = [{'quantidade_g': float(quantidade), 'tempo_horas': float(tempo_horas)}]
+                else:
+                    mesas = []
+                    for i in range(1, num_mesas + 1):
+                        mesas.append({
+                            'quantidade_g': float(request.POST.get(f'mesa_{i}_quantidade', 0) or 0),
+                            'tempo_horas': TempoImpressaoField().to_python(request.POST.get(f'mesa_{i}_tempo', '0') or '0'),
+                        })
+                
                 calculadora = CalculadoraCustosFilamento(
                     equipamento_id=equipamento.id,
-                    quantidade_filamento_g=quantidade,
-                    tempo_horas=tempo_horas,
+                    mesas=mesas,
+                    taxa_perda=taxa_perda,
                     materia_prima_id=materia_prima.id
                 )
 
@@ -70,18 +106,48 @@ class CalcularCustoAPI(APIView):
         dados = request.data
 
         if tipo == "resina":
+            # Suporta formato antigo (single) e novo (mesas)
+            mesas_raw = dados.get("mesas")
+            if mesas_raw:
+                mesas = [
+                    {
+                        'quantidade_g': float(m.get('quantidade_resina_g', 0)),
+                        'tempo_horas': float(m.get('tempo_horas', 0)),
+                    }
+                    for m in mesas_raw
+                ]
+            else:
+                # Compatibilidade retroativa
+                mesas = [{'quantidade_g': float(dados.get('quantidade_resina_g', 0)),
+                          'tempo_horas': float(dados.get('tempo_horas', 0))}]
+
             calculadora = CalculadoraCustosResina(
                 equipamento_id=dados.get("equipamento_id"),
-                quantidade_resina_g=float(dados.get("quantidade_resina_g", 0)),
-                tempo_horas=float(dados.get("tempo_horas", 0)),
+                mesas=mesas,
                 taxa_perda=float(dados.get("taxa_perda", 5)),
+                materia_prima_id=dados.get("materia_prima_id"),
             )
+
         elif tipo == "filamento":
+            mesas_raw = dados.get("mesas")
+            if mesas_raw:
+                mesas = [
+                    {
+                        'quantidade_g': float(m.get('quantidade_filamento_g', 0)),
+                        'tempo_horas': float(m.get('tempo_horas', 0)),
+                    }
+                    for m in mesas_raw
+                ]
+            else:
+                mesas = [{'quantidade_g': float(dados.get('quantidade_filamento_g', 0)),
+                          'tempo_horas': float(dados.get('tempo_horas', 0))}]
+
             calculadora = CalculadoraCustosFilamento(
                 equipamento_id=dados.get("equipamento_id"),
-                quantidade_filamento_g=float(dados.get("quantidade_filamento_g", 0)),
-                tempo_horas=float(dados.get("tempo_horas", 0)),
+                mesas=mesas,
+                materia_prima_id=dados.get("materia_prima_id"),
             )
+
         else:
             return Response({"erro": "Tipo de impressão inválido"}, status=status.HTTP_400_BAD_REQUEST)
 

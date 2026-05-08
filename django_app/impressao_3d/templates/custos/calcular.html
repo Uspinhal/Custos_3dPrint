@@ -15,12 +15,27 @@
                     <div class="col-md-4">{{ form.tipo.label_tag }} {{ form.tipo }}</div>
                     <div class="col-md-4">{{ form.equipamento.label_tag }} {{ form.equipamento }}</div>
                     <div class="col-md-4">{{ form.materia_prima.label_tag }} {{ form.materia_prima }}</div>
+                </div>
 
-                    <div class="col-md-3">{{ form.quantidade.label_tag }} {{ form.quantidade }}</div>
+                <!-- Número de mesas -->
+                <div class="row g-3 mt-1">
+                    <div class="col-md-3">
+                        <label for="num_mesas" class="form-label">Número de mesas</label>
+                        <input type="number" id="num_mesas" name="num_mesas" class="form-control"
+                               value="1" min="1" max="20">
+                    </div>
                     <div class="col-md-3" id="campo-unidade-resina" style="display:none;">
                         {{ form.unidade_resina.label_tag }} {{ form.unidade_resina }}
                     </div>
-                    <div class="col-md-3">
+                    <div class="col-md-3">{{ form.taxa_perda.label_tag }} {{ form.taxa_perda }}</div>
+                </div>
+
+                <!-- Mesa única (padrão) -->
+                <div id="campos-mesa-unica" class="row g-3 mt-1">
+                    <div class="col-md-4">
+                        {{ form.quantidade.label_tag }} {{ form.quantidade }}
+                    </div>
+                    <div class="col-md-4">
                         {{ form.tempo_horas.label_tag }}
                         {{ form.tempo_horas }}
                         <div class="form-text text-muted">H:MM (ex: 2:30) ou decimal (ex: 2.5).</div>
@@ -28,8 +43,10 @@
                             <div class="text-danger small">{{ form.tempo_horas.errors }}</div>
                         {% endif %}
                     </div>
-                    <div class="col-md-3">{{ form.taxa_perda.label_tag }} {{ form.taxa_perda }}</div>
                 </div>
+
+                <!-- Múltiplas mesas (dinâmico) -->
+                <div id="campos-multiplas-mesas" style="display:none;" class="mt-3"></div>
 
                 <div class="mt-3">
                     <button class="btn btn-primary">Calcular</button>
@@ -43,18 +60,23 @@
     <div class="card">
         <div class="card-header d-flex justify-content-between align-items-center">
             <strong>Resultado: R$ {{ breakdown.custo_total|floatformat:2 }}</strong>
-            <a href="{% url 'precificacao:criar' %}?custo_impressao={{ breakdown.custo_total|stringformat:'.2f'  }}&tipo_impressao={{ tipo }}"
+            <a href="{% url 'precificacao:criar' %}?custo_impressao={{ breakdown.custo_total|stringformat:'.2f' }}&tipo_impressao={{ tipo }}"
                 class="btn btn-success btn-sm">
                 <i class="bi bi-tag"></i> Usar em um Orçamento →
             </a>
+        </div>
         <div class="card-body">
-            <h6>Detalhamento</h6>
+            <h6>Detalhamento
+                {% if breakdown.num_mesas and breakdown.num_mesas > 1 %}
+                    <span class="badge bg-secondary ms-1">{{ breakdown.num_mesas }} mesas</span>
+                {% endif %}
+            </h6>
             <ul>
                 {% if breakdown.tipo == "resina" %}
-                <li>Resina: R$ {{ breakdown.custo_resina|floatformat:2 }}</li>
+                    <li>Resina: R$ {{ breakdown.custo_resina|floatformat:2 }}</li>
                 {% endif %}
                 {% if breakdown.tipo == "filamento" %}
-                <li>Filamento: R$ {{ breakdown.custo_filamento|floatformat:2 }}</li>
+                    <li>Filamento: R$ {{ breakdown.custo_filamento|floatformat:2 }}</li>
                 {% endif %}
                 <li>Energia: R$ {{ breakdown.custo_energia|floatformat:2 }}</li>
                 <li>Manutenção: R$ {{ breakdown.custo_manutencao|floatformat:2 }}</li>
@@ -63,7 +85,7 @@
                 <li><strong>Subtotal: R$ {{ breakdown.subtotal|floatformat:2 }}</strong></li>
                 <li>Pós-processamento: R$ {{ breakdown.custo_pos_processamento|floatformat:2 }}</li>
                 {% if breakdown.custo_perda %}
-                <li>Perda: R$ {{ breakdown.custo_perda|floatformat:2 }}</li>
+                    <li>Perda: R$ {{ breakdown.custo_perda|floatformat:2 }}</li>
                 {% endif %}
             </ul>
             <hr>
@@ -74,28 +96,97 @@
 </div>
 
 <script>
-    // Recarrega a página quando o tipo muda
+    document.addEventListener('DOMContentLoaded', function () {
+
     const tipoField = document.querySelector('#id_tipo');
     const campoUnidade = document.getElementById('campo-unidade-resina');
+    const numMesasInput = document.getElementById('num_mesas');
+    const camposMesaUnica = document.getElementById('campos-mesa-unica');
+    const camposMultiplas = document.getElementById('campos-multiplas-mesas');
 
-    function atualizaUnidade(){
+    // Label do campo quantidade varia por tipo
+    function labelQuantidade() {
+        return tipoField && tipoField.value === 'resina' ? 'Quantidade de resina' : 'Quantidade de filamento (g)';
+    }
+
+    function atualizaUnidade() {
         if (tipoField && tipoField.value === 'resina') {
             campoUnidade.style.display = 'block';
         } else {
             campoUnidade.style.display = 'none';
-        }   
+        }
     }
 
+    function renderMesas(n) {
+        const qtdInput = document.querySelector('#id_quantidade');
+        const tempoInput = document.querySelector('#id_tempo_horas');
+
+        if (n <= 1) {
+            camposMesaUnica.style.display = 'flex';
+            camposMultiplas.style.display = 'none';
+            camposMultiplas.innerHTML = '';
+            // Reativa required nos campos da mesa única
+            if (qtdInput) qtdInput.required = true;
+            if (tempoInput) tempoInput.required = true;
+            return;
+        }
+
+        camposMesaUnica.style.display = 'none';
+        camposMultiplas.style.display = 'block';
+        // Remove required dos campos ocultos
+        if (qtdInput) qtdInput.required = false;
+        if (tempoInput) tempoInput.required = false;
+
+        let html = '';
+        for (let i = 1; i <= n; i++) {
+            html += `
+                <div class="card mb-2">
+                    <div class="card-body py-2">
+                        <div class="row g-2 align-items-end">
+                            <div class="col-auto">
+                                <span class="fw-semibold text-muted">Mesa ${i}</span>
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label mb-1">${labelQuantidade()}</label>
+                                <input type="number" name="mesa_${i}_quantidade"
+                                       class="form-control form-control-sm"
+                                       placeholder="g" step="0.01" min="0" required>
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label mb-1">Tempo</label>
+                                <input type="text" name="mesa_${i}_tempo"
+                                       class="form-control form-control-sm"
+                                       placeholder="H:MM ou decimal" required>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+        camposMultiplas.innerHTML = html;
+    }
+
+    // Eventos
     if (tipoField) {
-        tipoField.addEventListener('change', function() {
+        tipoField.addEventListener('change', function () {
             atualizaUnidade();
-            const val = this.value;
+            renderMesas(parseInt(numMesasInput.value) || 1);
             const url = new URL(window.location.href);
-            url.searchParams.set('tipo', val);
+            url.searchParams.set('tipo', this.value);
             window.location.href = url.toString();
         });
-        atualizaUnidade(); // Chama ao carregar para ajustar o campo
+        atualizaUnidade();
     }
+
+    if (numMesasInput) {
+        numMesasInput.addEventListener('change', function () {
+            renderMesas(parseInt(this.value) || 1);
+        });
+        // Inicializa com o valor atual (ex: após erro de validação)
+        renderMesas(parseInt(numMesasInput.value) || 1);
+    }
+});
 </script>
- <a href="{% url 'core:home' %}" class="btn">← Voltar</a>
+
+<a href="{% url 'core:home' %}" class="btn mt-2">← Voltar</a>
 {% endblock %}

@@ -64,42 +64,43 @@ class CalculadoraCustos:
         raise NotImplementedError("Essa função deve ser implementada nas classes filhas")
 
 class CalculadoraCustosResina(CalculadoraCustos):
-    def __init__(self, equipamento_id, quantidade_resina_g, tempo_horas, taxa_perda=0.0, materia_prima_id=None):
-        super().__init__(equipamento_id, tempo_horas)
-        self.quantidade_resina = quantidade_resina_g * 1.15  # Garantindo que seja float
-        self.taxa_perda = taxa_perda/100  # Convertendo porcentagem para decimal
+    def __init__(self, equipamento_id, mesas, taxa_perda=0.0, materia_prima_id=None):
+        # mesas = [{'quantidade_g': 100, 'tempo_horas': 2.5}, ...]
+        tempo_total = sum(m['tempo_horas'] for m in mesas)
+        super().__init__(equipamento_id, tempo_total)
 
-        # Buscar a resina
-        # Usa a matéria-prima selecionada pelo usuário; fallback para a primeira do tipo
+        self.mesas = mesas
+        self.num_mesas = len(mesas)
+        quantidade_total = sum(m['quantidade_g'] for m in mesas)
+        self.quantidade_resina = quantidade_total * 1.15
+        self.taxa_perda = float(taxa_perda) / 100
+
         if materia_prima_id:
             self.resina = MateriaPrima.objects.filter(id=materia_prima_id, tipo='resina').first()
-        else:    
+        else:
             self.resina = MateriaPrima.objects.filter(tipo='resina').first()
 
-        # Buscar insumos relacionados à resina
-        self.insumos_resina = Insumos.objects.filter(tipo__in=['resina','geral'])
+        self.insumos_resina = Insumos.objects.filter(tipo__in=['resina', 'geral'])
 
     def custo_resina(self):
         if self.resina and self.resina.preco_unitario:
-            return self.quantidade_resina * float(self.resina.preco_unitario) / 1000  # Convertendo g para kg
+            return self.quantidade_resina * float(self.resina.preco_unitario) / 1000
         return 0
 
     def custo_insumos(self):
         total = 0
         for insumo in self.insumos_resina:
             if insumo.preco_unitario:
-                total +=(float(insumo.preco_unitario * (insumo.peso_no_calculo)))
-        return total
+                total += float(insumo.preco_unitario * insumo.peso_no_calculo)
+        return total * self.num_mesas  # insumos por rodada × nº de mesas
 
     def calcular_custo_total(self):
-        subtotal = self.custo_resina() + self.custo_insumos() + self.custo_manutencao() + self.custo_depreciacao() + \
-            self.custo_energia()
-
+        subtotal = (self.custo_resina() + self.custo_insumos() + self.custo_manutencao()
+                    + self.custo_depreciacao() + self.custo_energia())
         custo_total = subtotal + self.custo_pos_processamento(subtotal) + (self.custo_resina() * self.taxa_perda)
         return round(custo_total, 2)
-    
-    def detalhar_custos(self):
 
+    def detalhar_custos(self):
         custo_materia = round(self.custo_resina(), 2)
         custo_insumos = round(self.custo_insumos(), 2)
         custo_manutencao = round(self.custo_manutencao(), 2)
@@ -107,14 +108,13 @@ class CalculadoraCustosResina(CalculadoraCustos):
         custo_energia = round(self.custo_energia(), 2)
         custo_perda = round(self.custo_resina() * self.taxa_perda, 2)
 
-        # Subtotal sem custo_perda - igual ao usado em calcular_custo_total()
         subtotal = round(custo_materia + custo_insumos + custo_manutencao + custo_depreciacao + custo_energia, 2)
         custo_pos_processamento = round(self.custo_pos_processamento(subtotal), 2)
         custo_total = round(subtotal + custo_pos_processamento + custo_perda, 2)
 
-    
         return {
             "tipo": "resina",
+            "num_mesas": self.num_mesas,
             "custo_resina": custo_materia,
             "custo_insumos": custo_insumos,
             "custo_manutencao": custo_manutencao,
@@ -127,21 +127,31 @@ class CalculadoraCustosResina(CalculadoraCustos):
         }
 
 class CalculadoraCustosFilamento(CalculadoraCustos):
-    def __init__(self, equipamento_id, quantidade_filamento_g, tempo_horas, materia_prima_id=None):
-        super().__init__(equipamento_id, tempo_horas)
-        
-        
-        self.quantidade_filamento = quantidade_filamento_g
+    def __init__(self, equipamento_id, mesas, taxa_perda=0.0, materia_prima_id=None):
+        # mesas = [{'quantidade_g': 50, 'tempo_horas': 2.5}, {'quantidade_g': 30, 'tempo_horas': 1.5}]
+        tempo_total = sum(m['tempo_horas'] for m in mesas)
+        super().__init__(equipamento_id, tempo_total)
 
-        # Buscar insumos específicos
+        self.mesas = mesas
+        self.num_mesas = len(mesas)
+        self.quantidade_filamento = sum(m['quantidade_g'] for m in mesas)       
         # Nota: energia já é tratada pela classe base via custo_energia()
-        # Outros insumos específicos do filamento podem ser adicionados
-
+        self.insumos_filamento = Insumos.objects.filter(tipo__in=['filamento','geral'])
+        self.taxa_perda = float(taxa_perda) / 100
+        
         # Buscar o filamento como matéria-prima
         if materia_prima_id:
             self.filamento = MateriaPrima.objects.filter(id=materia_prima_id, tipo='filamento').first()
         else:
             self.filamento = MateriaPrima.objects.filter(tipo='filamento').first()
+
+    def custo_manutencao(self):
+        """Calcula o custo de manutenção proporcional ao tempo de impressão"""
+        if self.equipamento and self.equipamento.custo_aquisicao:
+            #hora_maquina = self.equipamento.custo_aquisicao / 10000
+            return self.tempo_horas * 0.3
+
+        return 0
 
     def custo_filamento(self):
         if self.filamento and self.filamento.preco_unitario:
@@ -149,9 +159,11 @@ class CalculadoraCustosFilamento(CalculadoraCustos):
         return 0
 
     def custo_insumos(self):
-        # Exemplo: se houver insumos específicos para filamento, eles podem ser calculados aqui
-        # Por enquanto, vamos assumir que não há insumos adicionais além da energia, que é tratada na classe base
-        return 0    
+        total = 0
+        for insumo in self.insumos_filamento:
+            if insumo.preco_unitario:
+                total +=(float(insumo.preco_unitario * (insumo.peso_no_calculo)))
+        return total    
 
     def calcular_custo_total(self):
         subtotal = (self.custo_filamento()
@@ -161,25 +173,29 @@ class CalculadoraCustosFilamento(CalculadoraCustos):
                     + self.custo_depreciacao()
                     )
         
-        custo_total = subtotal + self.custo_pos_processamento(subtotal)
+        custo_total = subtotal + self.custo_pos_processamento(subtotal) + (self.custo_filamento() * self.taxa_perda)
         return round(custo_total, 2)
     
     def detalhar_custos(self):
         custo_filamento = round(self.custo_filamento(), 2)
         custo_energia = round(self.custo_energia(), 2)
+        custo_perda = round(self.custo_filamento() * self.taxa_perda, 2)
         custo_manutencao = round(self.custo_manutencao(), 2)
         custo_depreciacao = round(self.custo_depreciacao(), 2)
+        custo_insumos = round(self.custo_insumos(), 2)
 
-        subtotal = round(custo_filamento + custo_energia + custo_manutencao + custo_depreciacao, 2)
+        subtotal = round(custo_filamento + custo_energia + custo_manutencao + custo_depreciacao + custo_insumos, 2)
         custo_pos_processamento = round(self.custo_pos_processamento(subtotal), 2)
-        custo_total = round(subtotal + custo_pos_processamento, 2)
+        custo_total = round(subtotal + custo_pos_processamento + custo_perda, 2)
 
         return {
             "tipo": "filamento",
             "custo_filamento": custo_filamento,
             "custo_energia": custo_energia,
+            "custo_perda": custo_perda,
             "custo_manutencao": custo_manutencao,
             "custo_depreciacao": custo_depreciacao,
+            "custo_insumos": custo_insumos,
             "subtotal": subtotal,
             "custo_pos_processamento": custo_pos_processamento,
             "custo_total": custo_total
