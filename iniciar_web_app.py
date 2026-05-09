@@ -65,7 +65,7 @@ def iniciar_servidor(ambiente):
         comando = [sys.executable, manage_py, "runserver", "0.0.0.0:8000"]
         print("🚀 Iniciando servidor de desenvolvimento...")
     else:
-        comando = ["gunicorn", "impressao_3d.wsgi:application", "--bind", "0.0.0.0:8000", "--workers", "2"]
+        comando = ["gunicorn", "core.wsgi:application", "--bind", "0.0.0.0:8000", "--workers", "2"]
         print("🚀 Iniciando Gunicorn (produção)...")
         # Coleta estáticos antes de subir em produção
         rodar_comando([sys.executable, manage_py, "collectstatic", "--noinput"], cwd=projeto_path, env=subprocess_env)
