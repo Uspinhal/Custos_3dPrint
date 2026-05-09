@@ -46,9 +46,8 @@ class CalculadoraCustosTest(TestCase):
 
     def test_custo_resina_maior_que_zero(self):
         calc = CalculadoraCustosResina(
-            equipamento_id=self.equipamento.id,  # type: ignore
-            quantidade_resina_g=50,
-            tempo_horas=3,
+            equipamento_id=self.equipamento.id, # type: ignore
+            mesas=[{'quantidade_g': 50, 'tempo_horas': 3}],
             taxa_perda=5,
         )
         custo_total = calc.calcular_custo_total()
@@ -58,9 +57,8 @@ class CalculadoraCustosTest(TestCase):
     def test_detalhamento_resina_consistente(self):
         """custo_total no breakdown deve bater com calcular_custo_total()."""
         calc = CalculadoraCustosResina(
-            equipamento_id=self.equipamento.id,  # type: ignore
-            quantidade_resina_g=50,
-            tempo_horas=3,
+            equipamento_id=self.equipamento.id, # type: ignore
+            mesas=[{'quantidade_g': 50, 'tempo_horas': 3}],
             taxa_perda=5,
         )
         self.assertEqual(calc.calcular_custo_total(), calc.detalhar_custos()["custo_total"])
@@ -74,9 +72,8 @@ class CalculadoraCustosTest(TestCase):
             preco_total=50.0,   # R$ 50/kg
         )
         calc = CalculadoraCustosFilamento(
-            equipamento_id=self.equipamento.id,  # type: ignore
-            quantidade_filamento_g=100,
-            tempo_horas=3,
+            equipamento_id=self.equipamento.id, # type: ignore
+            mesas=[{'quantidade_g': 100, 'tempo_horas': 3}],
         )
         custo_total = calc.calcular_custo_total()
         self.assertGreater(custo_total, 0)
@@ -91,9 +88,8 @@ class CalculadoraCustosTest(TestCase):
             preco_total=50.0,
         )
         calc = CalculadoraCustosFilamento(
-            equipamento_id=self.equipamento.id,  # type: ignore
-            quantidade_filamento_g=100,
-            tempo_horas=3,
+            equipamento_id=self.equipamento.id, # type: ignore
+            mesas=[{'quantidade_g': 100, 'tempo_horas': 3}],
         )
         self.assertEqual(calc.calcular_custo_total(), calc.detalhar_custos()["custo_total"])
 

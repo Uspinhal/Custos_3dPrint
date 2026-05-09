@@ -108,9 +108,11 @@ class CalculadoraCustosResina(CalculadoraCustos):
         custo_energia = round(self.custo_energia(), 2)
         custo_perda = round(self.custo_resina() * self.taxa_perda, 2)
 
-        subtotal = round(custo_materia + custo_insumos + custo_manutencao + custo_depreciacao + custo_energia, 2)
-        custo_pos_processamento = round(self.custo_pos_processamento(subtotal), 2)
-        custo_total = round(subtotal + custo_pos_processamento + custo_perda, 2)
+        subtotal_bruto = (self.custo_resina() + self.custo_insumos() + self.custo_manutencao()
+                        + self.custo_depreciacao() + self.custo_energia())
+        custo_pos_processamento = round(self.custo_pos_processamento(subtotal_bruto), 2)
+        subtotal = round(subtotal_bruto, 2)
+        custo_total = self.calcular_custo_total()
 
         return {
             "tipo": "resina",
@@ -177,16 +179,21 @@ class CalculadoraCustosFilamento(CalculadoraCustos):
         return round(custo_total, 2)
     
     def detalhar_custos(self):
+        # Valores individuais arredondados APENAS para exibição
         custo_filamento = round(self.custo_filamento(), 2)
         custo_energia = round(self.custo_energia(), 2)
-        custo_perda = round(self.custo_filamento() * self.taxa_perda, 2)
         custo_manutencao = round(self.custo_manutencao(), 2)
         custo_depreciacao = round(self.custo_depreciacao(), 2)
         custo_insumos = round(self.custo_insumos(), 2)
+        custo_perda = round(self.custo_filamento() * self.taxa_perda, 2)
 
-        subtotal = round(custo_filamento + custo_energia + custo_manutencao + custo_depreciacao + custo_insumos, 2)
-        custo_pos_processamento = round(self.custo_pos_processamento(subtotal), 2)
-        custo_total = round(subtotal + custo_pos_processamento + custo_perda, 2)
+        # Subtotal e total usando valores BRUTOS (igual ao calcular_custo_total)
+        subtotal_bruto = (self.custo_filamento() + self.custo_energia()
+                        + self.custo_manutencao() + self.custo_depreciacao()
+                        + self.custo_insumos())
+        custo_pos_processamento = round(self.custo_pos_processamento(subtotal_bruto), 2)
+        subtotal = round(subtotal_bruto, 2)
+        custo_total = self.calcular_custo_total()
 
         return {
             "tipo": "filamento",
