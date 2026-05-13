@@ -9,4 +9,5 @@ urlpatterns = [
     path('<int:orcamento_id>/',        views.detalhe_orcamento, name='detalhe'),
     path('<int:orcamento_id>/editar/', views.editar_orcamento,  name='editar'),
     path('<int:orcamento_id>/deletar/',views.deletar_orcamento, name='deletar'),
+    path('<int:orcamento_id>/enviar/', views.enviar_orcamento, name='enviar'),
 ]

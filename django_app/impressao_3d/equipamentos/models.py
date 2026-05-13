@@ -66,23 +66,22 @@ class Equipamento(models.Model):
     def custo_manutencao(self):
         """Retorna o custo de manutenção por hora.
         Para Resina: calculado a partir do custo de aquisição (custo_aquisicao / 2000).
+        Para Filamento: calculado a partir do custo de aquisição (custo_aquisicao / 5000).
+        Para Wash & Cure: calculado a partir do custo de aquisição (custo_aquisicao / 300).
         Para outros tipos: usa o valor informado em custo_manutencao_mensal.
         Não modifica atributos do objeto — apenas calcula e retorna.
         """
         if self.tipo == 'Resina':
-            self.custo_manutencao_mensal = round(self.custo_aquisicao/2000, 2)  # Custo fixo mensal para equipamentos de resina
-        if self.tipo == 'Filamento':
-            self.custo_manutencao_mensal = round(self.custo_aquisicao/5000, 2)  # Custo fixo mensal para equipamentos de filamento
-        if self.tipo == 'Wash & Cure':
-            self.custo_manutencao_mensal = round(self.custo_aquisicao/300, 2)  # Custo fixo mensal para equipamentos de Wash & Cure
-        
-        return round(max(self.custo_manutencao_mensal, 0), 2)
+            valor = round(self.custo_aquisicao / 2000, 2)
+        elif self.tipo == 'Filamento':
+            valor = round(self.custo_aquisicao / 5000, 2)
+        elif self.tipo == 'Wash & Cure':
+            valor = round(self.custo_aquisicao / 300, 2)
+        else:
+            valor = self.custo_manutencao_mensal
+
+        return round(max(valor, 0), 2)
     
-        
-        
-
-
-
     def save(self, *args, **kwargs):
         # Atualiza valor_residual ao salvar (custo_manutencao_mensal só é persistido
         # para tipos não-Resina; para Resina é sempre calculado dinamicamente)

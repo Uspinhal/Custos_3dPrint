@@ -48,21 +48,7 @@ def editar_orcamento(request, orcamento_id):
 
 def detalhe_orcamento(request, orcamento_id):
     orcamento = get_object_or_404(Orcamento, id=orcamento_id)
-    nome = orcamento.cliente_nome or "cliente"
-    msg = (
-        f"Olá *{nome}*! Segue o orçamento para *{orcamento.descricao}*:\n\n"
-        f" - Valor Total: *R$ {orcamento.preco_final:.2f}*\n\n"
-        f"Qualquer dúvida estou à disposição!\n\n"
-        f"(ESSA MENSAGEM É UM TESTE AUTOMÁTICO, NÃO RESPONDA)"
-    )
-
-    if orcamento.cliente_telefone:
-        whatsapp_url = f"https://wa.me/55{orcamento.cliente_telefone}?text={quote(msg)}"
-    else:
-        whatsapp_url = f"https://wa.me/?text={quote(msg)}"
-    
-    return render(request, 'precificacao/detalhe.html', 
-                  {'orcamento': orcamento, 'whatsapp_url': whatsapp_url})
+    return render(request, 'precificacao/detalhe.html', {'orcamento': orcamento})
 
 
 def deletar_orcamento(request, orcamento_id):
@@ -70,3 +56,27 @@ def deletar_orcamento(request, orcamento_id):
     orcamento.delete()
     messages.success(request, "Orçamento excluído.")
     return redirect('precificacao:lista')
+
+def enviar_orcamento(request, orcamento_id):
+    orcamento = get_object_or_404(Orcamento, id=orcamento_id)
+
+    if orcamento.status == 'rascunho':
+        orcamento.status = 'enviado'
+        orcamento.save()
+        messages.success(request, "Status atualizado para Enviado.")
+
+    nome = (orcamento.cliente.nome if orcamento.cliente else "cliente")
+    telefone = (orcamento.cliente.whatsapp if orcamento.cliente else None)
+
+    msg = (
+        f"Olá *{nome}*! Segue o orçamento para *{orcamento.descricao}*:\n\n"
+        f" - Valor Total: *R$ {orcamento.preco_final:.2f}*\n\n"
+        f"Qualquer dúvida estou à disposição!"
+    )
+
+    if telefone:
+        whatsapp_url = f"https://wa.me/55{telefone}?text={quote(msg)}"
+    else:
+        whatsapp_url = f"https://wa.me/?text={quote(msg)}"
+
+    return redirect(whatsapp_url)

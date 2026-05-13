@@ -24,9 +24,15 @@
                 <dt class="col-sm-5">Data de Criação</dt>
                 <dd class="col-sm-7">{{ orcamento.data_criacao|date:"d/m/Y" }}</dd>
                 <dt class="col-sm-5">Cliente</dt>
-                <dd class="col-sm-7">{{ orcamento.cliente_nome|default:"—" }}</dd>
+                <dd class="col-sm-7">
+                     {% if orcamento.cliente %}
+                        <a href="{% url 'clientes:detalhe' orcamento.cliente.pk %}">{{ orcamento.cliente.nome }}</a>
+                    {% else %}
+                        —
+                    {% endif %}
+                </dd>
                 <dt class="col-sm-5">Telefone</dt>
-                <dd class="col-sm-7">{{ orcamento.cliente_telefone|default:"—" }}</dd>
+                <dd class="col-sm-7">{{ orcamento.cliente.whatsapp|default:"—" }}</dd>
             </dl>
         </div>
     </div>
@@ -80,7 +86,8 @@
     </div>
     {% endif %}
 
-    {% with texto="Olá, *"|add:orcamento.cliente_nome|default:""|add:"*! Segue o orçamento para *"|add:orcamento.descricao|add:"*:%0A%0A" %}
+    {% with nome_cliente=orcamento.cliente.nome|default:"" %}
+    {% with texto="Olá, *"|add:nome_cliente|add:"*! Segue o orçamento para *"|add:orcamento.descricao|add:"*:%0A%0A" %}
     {% with detalhes="Custo Base: R$ "|add:orcamento.custo_base|stringformat:'.2f'|add:"%0APreço Final: *R$ "|add:orcamento.preco_final|stringformat:'.2f'|add:"*%0A%0AQualquer dúvida estou à disposição!" %}
 
     <div class="d-flex gap-2 flex-wrap">
@@ -88,13 +95,14 @@
         <a href="{% url 'precificacao:deletar' orcamento.id %}" class="btn btn-danger"
             onclick="return confirm('Excluir este orçamento?')">Excluir
         </a>
-        <a href="{{ whatsapp_url }}" target="_blank" class="btn btn-success">
+        <a href="{% url 'precificacao:enviar' orcamento.id %}" target="_blank" class="btn btn-success">
             <i class="bi bi-whatsapp"></i> Enviar WhatsApp
         </a>
 
         <a href="{% url 'precificacao:lista' %}" class="btn btn-secondary">← Voltar</a>
     </div>
 
+    {% endwith %}
     {% endwith %}
     {% endwith %}
 </div>

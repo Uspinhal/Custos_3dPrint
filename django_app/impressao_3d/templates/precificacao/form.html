@@ -14,15 +14,12 @@
         <div class="card mb-3">
             <div class="card-header">Identificação</div>
             <div class="card-body row g-3">
-                <div class="col-md-6">
-                    <label class="form-label">
-                        {{ form.cliente_nome.label }}
-                    </label>
-                    {{ form.cliente_nome }}
-                </div>
-                <div class="col-md-6">
-                    <label class="form-label">{{ form.cliente_telefone.label }}</label>
-                    {{ form.cliente_telefone }}
+                <div class="col-12">
+                    <label class="form-label">{{ form.cliente.label }}</label>
+                    {{ form.cliente }}
+                    {% if form.cliente.help_text %}
+                        <div class="form-text">{{ form.cliente.help_text }}</div>
+                    {% endif %}
                 </div>
                 <div class="col-12">
                     <label class="form-label">{{ form.descricao.label }}</label>
