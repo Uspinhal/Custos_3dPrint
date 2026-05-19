@@ -1,0 +1,175 @@
+{% extends "base.html" %}
+{% block title %}Pedido #{{ pedido.pk }}{% endblock %}
+
+{% block content %}
+{% with status=pedido.status %}
+
+{# ── Cabeçalho ── #}
+<div class="d-flex justify-content-between align-items-start mb-4">
+  <div class="d-flex align-items-center gap-2">
+    <a href="{% url 'pedidos:lista' %}" class="btn btn-sm btn-outline-secondary">
+      <i class="bi bi-arrow-left"></i>
+    </a>
+    <div>
+      <h4 class="mb-0">Pedido #{{ pedido.pk }}</h4>
+      <span class="text-secondary small">{{ pedido.data_pedido|date:"d/m/Y" }}</span>
+    </div>
+  </div>
+  <div class="d-flex gap-2">
+    <a href="{% url 'pedidos:editar' pedido.pk %}" class="btn btn-sm btn-outline-secondary">
+      <i class="bi bi-pencil"></i> Editar
+    </a>
+    <form method="post" action="{% url 'pedidos:marcar_enviado' pedido.pk %}" class="d-inline">
+      {% csrf_token %}
+      <button type="submit" class="btn btn-sm {% if pedido.is_enviado %}btn-success{% else %}btn-outline-success{% endif %}">
+        <i class="bi bi-truck"></i>
+        {% if pedido.is_enviado %}Enviado ✓{% else %}Marcar como enviado{% endif %}
+      </button>
+    </form>
+  </div>
+</div>
+
+{# ── Cards de status ── #}
+<div class="row g-3 mb-4">
+  <div class="col-md-3">
+    <div class="card bg-dark border-secondary h-100">
+      <div class="card-body py-2">
+        <div class="text-secondary small">Status</div>
+        <div class="fw-semibold mt-1">
+          {% if pedido.is_enviado %}
+            <span class="badge bg-success fs-6">Enviado</span>
+          {% else %}
+            <span class="badge fs-6
+              {% if status == 'na_fila' %}bg-secondary
+              {% elif status == 'em_producao' %}bg-warning text-dark
+              {% elif status == 'embalado' %}bg-info text-dark
+              {% else %}bg-secondary{% endif %}">
+              {{ status|capfirst|replace:"_":" " }}
+            </span>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-3">
+    <div class="card bg-dark border-secondary h-100">
+      <div class="card-body py-2">
+        <div class="text-secondary small">Cliente</div>
+        <div class="fw-semibold mt-1">{{ pedido.cliente.nome|default:"—" }}</div>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-3">
+    <div class="card bg-dark border-secondary h-100">
+      <div class="card-body py-2">
+        <div class="text-secondary small">Origem</div>
+        <div class="fw-semibold mt-1">
+          <span class="badge
+            {% if pedido.origem == 'whatsapp' %}bg-success
+            {% elif pedido.origem == 'yampi' %}bg-primary
+            {% else %}bg-secondary{% endif %}">
+            {{ pedido.get_origem_display }}
+          </span>
+          {% if pedido.referencia_yampi %}
+            <span class="text-secondary small ms-1">#{{ pedido.referencia_yampi }}</span>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-3">
+    <div class="card bg-dark border-secondary h-100">
+      <div class="card-body py-2">
+        <div class="text-secondary small">Prazo</div>
+        <div class="fw-semibold mt-1">
+          {% if pedido.data_prazo %}
+            {{ pedido.data_prazo|date:"d/m/Y" }}
+            {% if pedido.prioridade == 'urgente' %}
+              <span class="badge bg-danger ms-1">Urgente</span>
+            {% endif %}
+          {% else %}—{% endif %}
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+{% if pedido.observacoes %}
+<div class="alert alert-secondary mb-4">
+  <small class="text-secondary">Obs:</small> {{ pedido.observacoes }}
+</div>
+{% endif %}
+
+{# ── Itens ── #}
+<div class="card bg-dark border-secondary mb-4">
+  <div class="card-header d-flex justify-content-between align-items-center">
+    <span class="text-secondary small">Itens do Pedido</span>
+    <span class="badge bg-secondary">{{ pedido.itens.count }} item(ns)</span>
+  </div>
+  <div class="table-responsive">
+    <table class="table table-dark table-sm mb-0 align-middle">
+      <thead class="text-secondary">
+        <tr>
+          <th>Descrição</th>
+          <th>Qtd</th>
+          <th>Tipo</th>
+          <th>Arquivo</th>
+          <th>Status</th>
+          <th>OPs</th>
+          <th>Obs</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for item in pedido.itens.all %}
+        <tr>
+          <td>{{ item.descricao }}</td>
+          <td>{{ item.quantidade }}</td>
+          <td>
+            <span class="badge {% if item.tipo_impressao == 'resina' %}bg-purple text-light{% else %}bg-info text-dark{% endif %}">
+              {{ item.get_tipo_impressao_display }}
+            </span>
+          </td>
+          <td><span class="text-secondary small font-monospace">{{ item.arquivo_stl|default:"—" }}</span></td>
+          <td>
+            {% with s=item.status %}
+            <span class="badge
+              {% if s == 'na_fila' %}bg-secondary
+              {% elif s == 'imprimindo' %}bg-warning text-dark
+              {% elif s == 'concluido' %}bg-success
+              {% elif s == 'falhou' %}bg-danger
+              {% else %}bg-secondary{% endif %}">
+              {{ s|default:"na fila" }}
+            </span>
+            {% endwith %}
+          </td>
+          <td>
+            {% for oi in item.ordens_item.all %}
+              <a href="{% url 'pedidos:ordem_detalhe' oi.ordem.pk %}"
+                 class="badge bg-outline-secondary text-secondary border border-secondary text-decoration-none me-1">
+                OP #{{ oi.ordem.pk }}
+              </a>
+            {% empty %}
+              <span class="text-secondary small">—</span>
+            {% endfor %}
+          </td>
+          <td><span class="text-secondary small">{{ item.observacoes|default:"" }}</span></td>
+        </tr>
+        {% empty %}
+        <tr><td colspan="7" class="text-center text-secondary py-3">Nenhum item cadastrado.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+
+{# ── Link rápido para nova OP ── #}
+{% if not pedido.is_enviado %}
+<div class="d-flex gap-2">
+  <a href="{% url 'pedidos:ordem_nova' %}" class="btn btn-sm btn-outline-primary">
+    <i class="bi bi-printer"></i> Criar Ordem de Produção com itens deste pedido
+  </a>
+</div>
+{% endif %}
+
+{% endwith %}
+{% endblock %}

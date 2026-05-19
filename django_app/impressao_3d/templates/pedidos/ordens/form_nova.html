@@ -1,0 +1,241 @@
+{% extends "base.html" %}
+{% block title %}Nova Ordem de Produção{% endblock %}
+
+{% block content %}
+<div class="d-flex align-items-center gap-2 mb-4">
+  <a href="{% url 'pedidos:ordem_lista' %}" class="btn btn-sm btn-outline-secondary">
+    <i class="bi bi-arrow-left"></i>
+  </a>
+  <h4 class="mb-0">🖨️ Nova Ordem de Produção</h4>
+</div>
+
+<form method="post" id="form-nova-op">
+  {% csrf_token %}
+
+  <div class="row g-4">
+
+    {# ── Coluna esquerda: configuração da OP ── #}
+    <div class="col-md-5">
+      <div class="card bg-dark border-secondary h-100">
+        <div class="card-header text-secondary small">Configuração da OP</div>
+        <div class="card-body">
+
+          {% if form.non_field_errors %}
+            <div class="alert alert-danger">{{ form.non_field_errors }}</div>
+          {% endif %}
+
+          <div class="mb-3">
+            <label class="form-label small text-secondary">Impressora *</label>
+            {{ form.impressora }}
+            {% if form.impressora.errors %}<div class="text-danger small mt-1">{{ form.impressora.errors }}</div>{% endif %}
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label small text-secondary">Matéria-Prima</label>
+            {{ form.materia_prima }}
+            {% if form.materia_prima.errors %}<div class="text-danger small mt-1">{{ form.materia_prima.errors }}</div>{% endif %}
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label small text-secondary">Qtd. utilizada (ml / g)</label>
+            {{ form.quantidade_utilizada }}
+            <div class="form-text text-secondary">Preencha apenas ao concluir a OP.</div>
+          </div>
+
+          <div class="row g-2">
+            <div class="col-6">
+              <label class="form-label small text-secondary">Data início</label>
+              {{ form.data_inicio }}
+            </div>
+            <div class="col-6">
+              <label class="form-label small text-secondary">Data conclusão</label>
+              {{ form.data_conclusao }}
+            </div>
+          </div>
+
+          <div class="mt-3">
+            <label class="form-label small text-secondary">Observações</label>
+            {{ form.observacoes }}
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+    {# ── Coluna direita: seleção de itens ── #}
+    <div class="col-md-7">
+      <div class="card bg-dark border-secondary">
+        <div class="card-header">
+          <div class="d-flex justify-content-between align-items-center">
+            <span class="text-secondary small">Itens disponíveis para esta OP</span>
+            {# Filtro por tipo de impressão — recarrega via GET #}
+            <div class="d-flex gap-2 align-items-center">
+              <span class="text-secondary small me-1">Filtrar:</span>
+              <a href="?tipo_impressao=" id="btn-todos"
+                 class="btn btn-xs btn-sm {% if not tipo_filtro %}btn-secondary{% else %}btn-outline-secondary{% endif %} py-0 px-2">
+                Todos
+              </a>
+              {% for val, label in tipo_choices %}
+              <a href="?tipo_impressao={{ val }}" id="btn-{{ val }}"
+                 class="btn btn-sm {% if tipo_filtro == val %}btn-secondary{% else %}btn-outline-secondary{% endif %} py-0 px-2">
+                {{ label }}
+              </a>
+              {% endfor %}
+            </div>
+          </div>
+        </div>
+
+        <div class="card-body p-0">
+          {% if itens_qs %}
+          <div class="p-2 border-bottom border-secondary d-flex justify-content-between align-items-center">
+            <div class="form-check ms-2 mb-0">
+              <input class="form-check-input" type="checkbox" id="select-all">
+              <label class="form-check-label text-secondary small" for="select-all">
+                Selecionar todos
+              </label>
+            </div>
+            <span class="text-secondary small me-2" id="counter">0 selecionados</span>
+          </div>
+
+          <div style="max-height: 400px; overflow-y: auto;">
+            <table class="table table-dark table-hover table-sm mb-0 align-middle">
+              <thead class="text-secondary sticky-top" style="top:0; background:#212529;">
+                <tr>
+                  <th style="width:36px"></th>
+                  <th>Descrição</th>
+                  <th>Qtd</th>
+                  <th>Tipo</th>
+                  <th>Pedido</th>
+                  <th>Prazo</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for item in itens_qs %}
+                <tr class="item-row" data-tipo="{{ item.tipo_impressao }}">
+                  <td>
+                    <input class="form-check-input item-check" type="checkbox"
+                           name="item_ids" value="{{ item.pk }}"
+                           id="item_{{ item.pk }}"
+                           {% if item.pk|stringformat:'s' in request.POST.getlist.item_ids %}checked{% endif %}>
+                  </td>
+                  <td>
+                    <label for="item_{{ item.pk }}" class="mb-0 w-100 cursor-pointer">
+                      {{ item.descricao }}
+                      {% if item.arquivo_stl %}
+                        <span class="text-secondary small font-monospace ms-1">({{ item.arquivo_stl }})</span>
+                      {% endif %}
+                    </label>
+                  </td>
+                  <td>{{ item.quantidade }}</td>
+                  <td>
+                    <span class="badge {% if item.tipo_impressao == 'resina' %}bg-danger bg-opacity-75{% else %}bg-info text-dark{% endif %}">
+                      {{ item.get_tipo_impressao_display }}
+                    </span>
+                  </td>
+                  <td>
+                    <a href="{% url 'pedidos:detalhe' item.pedido.pk %}"
+                       class="text-decoration-none text-secondary small" target="_blank">
+                      #{{ item.pedido.pk }}
+                      {% if item.pedido.cliente %}
+                        — {{ item.pedido.cliente.nome|truncatechars:12 }}
+                      {% endif %}
+                    </a>
+                    {% if item.pedido.prioridade == 'urgente' %}
+                      <span class="badge bg-danger ms-1" style="font-size:.6rem;">Urgente</span>
+                    {% endif %}
+                  </td>
+                  <td>
+                    <span class="small {% if item.pedido.data_prazo %}text-secondary{% else %}text-muted{% endif %}">
+                      {{ item.pedido.data_prazo|date:"d/m"|default:"—" }}
+                    </span>
+                  </td>
+                </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+
+          {% else %}
+          <div class="text-center py-4 text-secondary">
+            <p class="mb-0">Nenhum item disponível
+              {% if tipo_filtro %}com o filtro "{{ tipo_filtro }}"{% endif %}.
+            </p>
+            {% if tipo_filtro %}
+              <a href="?" class="btn btn-sm btn-link text-secondary mt-1">Ver todos</a>
+            {% endif %}
+          </div>
+          {% endif %}
+        </div>
+
+        {% if item_form.item_ids.errors %}
+        <div class="card-footer border-secondary">
+          <div class="text-danger small">{{ item_form.item_ids.errors }}</div>
+        </div>
+        {% endif %}
+      </div>
+
+      {# Aviso nenhum item selecionado #}
+      <div id="aviso-selecao" class="alert alert-warning mt-2 d-none py-2 small">
+        ⚠️ Selecione ao menos um item para criar a OP.
+      </div>
+    </div>
+
+  </div>{# end row #}
+
+  <div class="d-flex gap-2 mt-4">
+    <button type="submit" class="btn btn-primary" id="btn-submit">
+      <i class="bi bi-printer"></i> Criar Ordem de Produção
+    </button>
+    <a href="{% url 'pedidos:ordem_lista' %}" class="btn btn-outline-secondary">Cancelar</a>
+  </div>
+
+</form>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+(function () {
+  const checkboxes = document.querySelectorAll('.item-check');
+  const selectAll  = document.getElementById('select-all');
+  const counter    = document.getElementById('counter');
+  const aviso      = document.getElementById('aviso-selecao');
+  const btnSubmit  = document.getElementById('btn-submit');
+
+  function updateCounter() {
+    const n = document.querySelectorAll('.item-check:checked').length;
+    counter.textContent = n + ' selecionado' + (n !== 1 ? 's' : '');
+    selectAll.indeterminate = n > 0 && n < checkboxes.length;
+    selectAll.checked = n === checkboxes.length && n > 0;
+  }
+
+  checkboxes.forEach(cb => cb.addEventListener('change', updateCounter));
+
+  selectAll.addEventListener('change', function () {
+    checkboxes.forEach(cb => { cb.checked = this.checked; });
+    updateCounter();
+  });
+
+  // Validação client-side ao submeter
+  btnSubmit.closest('form').addEventListener('submit', function (e) {
+    const nsel = document.querySelectorAll('.item-check:checked').length;
+    if (nsel === 0) {
+      e.preventDefault();
+      aviso.classList.remove('d-none');
+      window.scrollTo({ top: aviso.offsetTop - 80, behavior: 'smooth' });
+    }
+  });
+
+  // Estilizar campos Django
+  document.querySelectorAll('select:not([name=item_ids]), input[type=text], input[type=number], input[type=date], textarea')
+    .forEach(el => {
+      el.classList.add('form-control', 'form-control-sm', 'bg-dark', 'text-light', 'border-secondary');
+      if (el.tagName === 'SELECT') {
+        el.classList.remove('form-control');
+        el.classList.add('form-select', 'form-select-sm');
+      }
+    });
+
+  updateCounter();
+})();
+</script>
+{% endblock %}

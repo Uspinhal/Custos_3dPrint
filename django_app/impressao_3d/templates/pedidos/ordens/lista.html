@@ -1,0 +1,85 @@
+{% extends "base.html" %}
+{% block title %}Ordens de Produção{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+  <h4 class="mb-0">🖨️ Ordens de Produção</h4>
+  <a href="{% url 'pedidos:ordem_nova' %}" class="btn btn-primary btn-sm">
+    <i class="bi bi-plus-lg"></i> Nova OP
+  </a>
+</div>
+
+{% if ordens %}
+<div class="row g-3">
+  {% for ordem in ordens %}
+  {% with status=ordem.status %}
+  <div class="col-12">
+    <div class="card bg-dark border-secondary">
+      <div class="card-body py-2 px-3">
+        <div class="d-flex justify-content-between align-items-center">
+
+          {# Título e impressora #}
+          <div class="d-flex align-items-center gap-3">
+            <a href="{% url 'pedidos:ordem_detalhe' ordem.pk %}"
+               class="fw-semibold text-decoration-none">
+              OP #{{ ordem.pk }}
+            </a>
+            <span class="text-secondary small">
+              <i class="bi bi-printer"></i> {{ ordem.impressora.nome|default:"—" }}
+            </span>
+            {% if ordem.materia_prima %}
+            <span class="text-secondary small">
+              <i class="bi bi-box"></i> {{ ordem.materia_prima.nome }}
+            </span>
+            {% endif %}
+          </div>
+
+          {# Status e contagem de itens #}
+          <div class="d-flex align-items-center gap-3">
+            <span class="text-secondary small">
+              {{ ordem.ordens_item.count }} item(ns)
+            </span>
+            <span class="badge
+              {% if status == 'agendada' %}bg-secondary
+              {% elif status == 'imprimindo' %}bg-warning text-dark
+              {% elif status == 'concluida' %}bg-success
+              {% elif status == 'parcialmente_falhou' %}bg-danger
+              {% else %}bg-secondary{% endif %}">
+              {{ status|capfirst|replace:"_":" " }}
+            </span>
+            <a href="{% url 'pedidos:ordem_detalhe' ordem.pk %}"
+               class="btn btn-sm btn-outline-secondary py-0">
+              Ver
+            </a>
+          </div>
+
+        </div>
+
+        {# Mini-lista de itens na mesma linha #}
+        <div class="mt-1 d-flex flex-wrap gap-1">
+          {% for oi in ordem.ordens_item.all %}
+          <span class="badge
+            {% if oi.status == 'na_fila' %}bg-secondary
+            {% elif oi.status == 'imprimindo' %}bg-warning text-dark
+            {% elif oi.status == 'concluido' %}bg-success
+            {% elif oi.status == 'falhou' %}bg-danger
+            {% endif %}"
+            title="{{ oi.item.descricao }} — Pedido #{{ oi.item.pedido.pk }}">
+            {{ oi.item.descricao|truncatechars:20 }}
+          </span>
+          {% endfor %}
+        </div>
+
+      </div>
+    </div>
+  </div>
+  {% endwith %}
+  {% endfor %}
+</div>
+{% else %}
+<div class="text-center py-5 text-secondary">
+  <p class="mb-2">Nenhuma Ordem de Produção criada ainda.</p>
+  <a href="{% url 'pedidos:ordem_nova' %}" class="btn btn-primary btn-sm">Criar primeira OP</a>
+</div>
+{% endif %}
+{% endblock %}

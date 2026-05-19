@@ -1,0 +1,203 @@
+{% extends "base.html" %}
+{% block title %}{{ titulo }}{% endblock %}
+
+{% block content %}
+<div class="d-flex align-items-center gap-2 mb-4">
+  <a href="{% if pedido %}{% url 'pedidos:detalhe' pedido.pk %}{% else %}{% url 'pedidos:lista' %}{% endif %}"
+     class="btn btn-sm btn-outline-secondary">
+    <i class="bi bi-arrow-left"></i>
+  </a>
+  <h4 class="mb-0">{{ titulo }}</h4>
+</div>
+
+<form method="post">
+  {% csrf_token %}
+
+  {% if form.non_field_errors %}
+    <div class="alert alert-danger">{{ form.non_field_errors }}</div>
+  {% endif %}
+
+  {# ── Dados do Pedido ── #}
+  <div class="card bg-dark border-secondary mb-4">
+    <div class="card-header text-secondary small">Dados do Pedido</div>
+    <div class="card-body">
+      <div class="row g-3">
+
+        <div class="col-md-4">
+          <label class="form-label small text-secondary">Cliente</label>
+          {{ form.cliente }}
+          {% if form.cliente.errors %}<div class="text-danger small">{{ form.cliente.errors }}</div>{% endif %}
+        </div>
+
+        <div class="col-md-4">
+          <label class="form-label small text-secondary">Origem</label>
+          {{ form.origem }}
+          {% if form.origem.errors %}<div class="text-danger small">{{ form.origem.errors }}</div>{% endif %}
+        </div>
+
+        <div class="col-md-4">
+          <label class="form-label small text-secondary">Ref. Yampi</label>
+          {{ form.referencia_yampi }}
+          {% if form.referencia_yampi.errors %}<div class="text-danger small">{{ form.referencia_yampi.errors }}</div>{% endif %}
+        </div>
+
+        <div class="col-md-4">
+          <label class="form-label small text-secondary">Orçamento vinculado</label>
+          {{ form.orcamento }}
+          {% if form.orcamento.errors %}<div class="text-danger small">{{ form.orcamento.errors }}</div>{% endif %}
+        </div>
+
+        <div class="col-md-4">
+          <label class="form-label small text-secondary">Prioridade</label>
+          {{ form.prioridade }}
+          {% if form.prioridade.errors %}<div class="text-danger small">{{ form.prioridade.errors }}</div>{% endif %}
+        </div>
+
+        <div class="col-md-2">
+          <label class="form-label small text-secondary">Data do Pedido</label>
+          {{ form.data_pedido }}
+          {% if form.data_pedido.errors %}<div class="text-danger small">{{ form.data_pedido.errors }}</div>{% endif %}
+        </div>
+
+        <div class="col-md-2">
+          <label class="form-label small text-secondary">Prazo</label>
+          {{ form.data_prazo }}
+          {% if form.data_prazo.errors %}<div class="text-danger small">{{ form.data_prazo.errors }}</div>{% endif %}
+        </div>
+
+        <div class="col-12">
+          <label class="form-label small text-secondary">Observações</label>
+          {{ form.observacoes }}
+          {% if form.observacoes.errors %}<div class="text-danger small">{{ form.observacoes.errors }}</div>{% endif %}
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  {# ── Itens ── #}
+  <div class="card bg-dark border-secondary mb-4">
+    <div class="card-header d-flex justify-content-between align-items-center">
+      <span class="text-secondary small">Itens do Pedido</span>
+      <button type="button" class="btn btn-sm btn-outline-primary" id="btn-add-item">
+        <i class="bi bi-plus"></i> Adicionar item
+      </button>
+    </div>
+    <div class="card-body p-0">
+      {{ formset.management_form }}
+      <div id="formset-container">
+        {% for f in formset %}
+        <div class="item-form border-bottom border-secondary p-3 {% if forloop.last %}border-bottom-0{% endif %}">
+          <div class="row g-2 align-items-start">
+            {{ f.id }}
+            <div class="col-md-4">
+              <label class="form-label small text-secondary">Descrição</label>
+              {{ f.descricao }}
+              {% if f.descricao.errors %}<div class="text-danger small">{{ f.descricao.errors }}</div>{% endif %}
+            </div>
+            <div class="col-md-1">
+              <label class="form-label small text-secondary">Qtd</label>
+              {{ f.quantidade }}
+            </div>
+            <div class="col-md-2">
+              <label class="form-label small text-secondary">Tipo</label>
+              {{ f.tipo_impressao }}
+            </div>
+            <div class="col-md-3">
+              <label class="form-label small text-secondary">Arquivo STL</label>
+              {{ f.arquivo_stl }}
+            </div>
+            <div class="col-md-1">
+              <label class="form-label small text-secondary">Obs</label>
+              {{ f.observacoes }}
+            </div>
+            <div class="col-md-1 d-flex align-items-end pb-1">
+              {% if f.instance.pk %}
+                <div class="form-check">
+                  {{ f.DELETE }}
+                  <label class="form-check-label text-danger small" for="{{ f.DELETE.id_for_label }}">
+                    Excluir
+                  </label>
+                </div>
+              {% endif %}
+            </div>
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+
+      {# Template vazio para JS adicionar novos itens #}
+      <div id="empty-form" class="d-none item-form border-bottom border-secondary p-3">
+        <div class="row g-2 align-items-start">
+          <div class="col-md-4">
+            <label class="form-label small text-secondary">Descrição</label>
+            <input type="text" name="itens-__prefix__-descricao" class="form-control form-control-sm bg-dark text-light border-secondary">
+          </div>
+          <div class="col-md-1">
+            <label class="form-label small text-secondary">Qtd</label>
+            <input type="number" name="itens-__prefix__-quantidade" value="1" min="1"
+                   class="form-control form-control-sm bg-dark text-light border-secondary">
+          </div>
+          <div class="col-md-2">
+            <label class="form-label small text-secondary">Tipo</label>
+            <select name="itens-__prefix__-tipo_impressao" class="form-select form-select-sm bg-dark text-light border-secondary">
+              <option value="resina">Resina</option>
+              <option value="filamento">Filamento</option>
+            </select>
+          </div>
+          <div class="col-md-3">
+            <label class="form-label small text-secondary">Arquivo STL</label>
+            <input type="text" name="itens-__prefix__-arquivo_stl" class="form-control form-control-sm bg-dark text-light border-secondary">
+          </div>
+          <div class="col-md-1">
+            <label class="form-label small text-secondary">Obs</label>
+            <textarea name="itens-__prefix__-observacoes" rows="1" class="form-control form-control-sm bg-dark text-light border-secondary"></textarea>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <div class="d-flex gap-2">
+    <button type="submit" class="btn btn-primary">
+      {% if action == 'criar' %}Criar Pedido{% else %}Salvar Alterações{% endif %}
+    </button>
+    <a href="{% if pedido %}{% url 'pedidos:detalhe' pedido.pk %}{% else %}{% url 'pedidos:lista' %}{% endif %}"
+       class="btn btn-outline-secondary">
+      Cancelar
+    </a>
+  </div>
+</form>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+(function () {
+  const container  = document.getElementById('formset-container');
+  const emptyForm  = document.getElementById('empty-form');
+  const totalInput = document.getElementById('id_itens-TOTAL_FORMS');
+  const btnAdd     = document.getElementById('btn-add-item');
+
+  btnAdd.addEventListener('click', function () {
+    const idx      = parseInt(totalInput.value);
+    const newForm  = emptyForm.cloneNode(true);
+    newForm.id     = '';
+    newForm.classList.remove('d-none');
+    newForm.innerHTML = newForm.innerHTML.replaceAll('__prefix__', idx);
+    container.appendChild(newForm);
+    totalInput.value = idx + 1;
+  });
+
+  // Estilizar todos os campos de formulário herdados do Django
+  document.querySelectorAll('select, input[type=text], input[type=number], input[type=date], textarea')
+    .forEach(el => {
+      el.classList.add('form-control', 'form-control-sm', 'bg-dark', 'text-light', 'border-secondary');
+      if (el.tagName === 'SELECT') {
+        el.classList.remove('form-control');
+        el.classList.add('form-select', 'form-select-sm');
+      }
+    });
+})();
+</script>
+{% endblock %}
