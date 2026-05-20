@@ -30,6 +30,7 @@ class Equipamento(models.Model):
     potencia_watts = models.FloatField(default=0)
     vida_util_anos = models.IntegerField(default=5) # Vida útil em anos
     valor_residual = models.FloatField(default=0)
+    em_manutencao = models.BooleanField(default=False)
     observacoes = models.TextField(blank=True, null=True)
     class Meta:
         verbose_name = "Equipamento"
@@ -37,6 +38,42 @@ class Equipamento(models.Model):
 
     def __str__(self):
         return self.nome
+
+    @property
+    def op_atual(self):
+        return (
+            self.ordens_producao  # type: ignore[attr-defined]
+            .filter(data_conclusao__isnull=True, op_itens__status='imprimindo')
+            .distinct()
+            .first()
+        )
+
+    @property
+    def status_operacional(self):
+        if self.em_manutencao:
+            return 'maintenance'
+        if self.op_atual:
+            return 'printing'
+        return 'idle'
+
+    @property
+    def status_operacional_display(self):
+        labels = {
+            'maintenance': 'Manutenção',
+            'printing': 'Imprimindo',
+            'idle': 'Disponível',
+        }
+        return labels.get(self.status_operacional, self.status_operacional)
+
+    @property
+    def ops_na_fila(self):
+        return (
+            self.ordens_producao  # type: ignore[attr-defined]
+            .filter(data_conclusao__isnull=True)
+            .exclude(op_itens__status='imprimindo')
+            .distinct()
+            .order_by('id')
+        )
 
     def _data_aquisicao_como_date(self):
         """Retorna data_aquisicao como objeto date, seja str ou date.

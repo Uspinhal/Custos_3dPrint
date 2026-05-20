@@ -101,12 +101,26 @@
       <a href="{% url 'clientes:lista' %}" class="{% if '/clientes' in request.path %}active{% endif %}">
         <i class="bi bi-people"></i> Clientes
       </a>
-    </a>
+      <a href="{% url 'pedidos:lista' %}" class="{% if '/pedidos/' in request.path and '/pedidos/ordens/' not in request.path %}active{% endif %}">
+        <i class="bi bi-box-seam"></i> Pedidos
+      </a>
+      <a href="{% url 'pedidos:lista_ordens' %}" class="{% if '/pedidos/ordens/' in request.path %}active{% endif %}">
+        <i class="bi bi-printer"></i> Ordens de Produção
+      </a>
     <hr class="border-secondary">
   </div>
 
   <!-- Conteúdo -->
   <div class="content">
+    {% if messages %}
+      {% for message in messages %}
+        <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+          {{ message }}
+          <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+      {% endfor %}
+    {% endif %}
+
     {% block content %}
     {% endblock %}
   </div>
@@ -122,15 +136,4 @@
   {% block scripts %}{% endblock %}
 
 </body>
-{% if messages %}
-  <div class="container mt-3">
-    {% for message in messages %}
-      <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
-        {{ message }}
-        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-      </div>
-    {% endfor %}
-  </div>
-{% endif %}
-
 </html>

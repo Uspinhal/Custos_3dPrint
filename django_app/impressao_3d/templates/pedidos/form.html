@@ -111,15 +111,14 @@
               <label class="form-label small text-secondary">Obs</label>
               {{ f.observacoes }}
             </div>
-            <div class="col-md-1 d-flex align-items-end pb-1">
-              {% if f.instance.pk %}
-                <div class="form-check">
-                  {{ f.DELETE }}
-                  <label class="form-check-label text-danger small" for="{{ f.DELETE.id_for_label }}">
-                    Excluir
-                  </label>
-                </div>
-              {% endif %}
+            <div class="col-md-1 d-flex align-items-end justify-content-end pb-1">
+              <div class="d-none">{{ f.DELETE }}</div>
+              <button type="button"
+                      class="btn btn-sm btn-outline-danger btn-remove-item"
+                      title="Remover item"
+                      aria-label="Remover item">
+                <i class="bi bi-trash"></i>
+              </button>
             </div>
           </div>
         </div>
@@ -129,6 +128,7 @@
       {# Template vazio para JS adicionar novos itens #}
       <div id="empty-form" class="d-none item-form border-bottom border-secondary p-3">
         <div class="row g-2 align-items-start">
+          <input type="hidden" name="itens-__prefix__-id">
           <div class="col-md-4">
             <label class="form-label small text-secondary">Descrição</label>
             <input type="text" name="itens-__prefix__-descricao" class="form-control form-control-sm bg-dark text-light border-secondary">
@@ -153,6 +153,15 @@
             <label class="form-label small text-secondary">Obs</label>
             <textarea name="itens-__prefix__-observacoes" rows="1" class="form-control form-control-sm bg-dark text-light border-secondary"></textarea>
           </div>
+          <div class="col-md-1 d-flex align-items-end justify-content-end pb-1">
+            <input type="checkbox" name="itens-__prefix__-DELETE" class="d-none">
+            <button type="button"
+                    class="btn btn-sm btn-outline-danger btn-remove-item"
+                    title="Remover item"
+                    aria-label="Remover item">
+              <i class="bi bi-trash"></i>
+            </button>
+          </div>
         </div>
       </div>
 
@@ -171,7 +180,7 @@
 </form>
 {% endblock %}
 
-{% block extra_js %}
+{% block scripts %}
 <script>
 (function () {
   const container  = document.getElementById('formset-container');
@@ -187,6 +196,33 @@
     newForm.innerHTML = newForm.innerHTML.replaceAll('__prefix__', idx);
     container.appendChild(newForm);
     totalInput.value = idx + 1;
+  });
+
+  container.addEventListener('click', function (event) {
+    const btn = event.target.closest('.btn-remove-item');
+    if (!btn) {
+      return;
+    }
+
+    const itemForm = btn.closest('.item-form');
+    const deleteInput = itemForm.querySelector('input[type=checkbox][name$="-DELETE"]');
+
+    if (deleteInput) {
+      const idInput = itemForm.querySelector('input[type=hidden][name$="-id"]');
+      const isExistingItem = idInput && idInput.value;
+
+      deleteInput.checked = !deleteInput.checked;
+      itemForm.classList.toggle('opacity-50', deleteInput.checked && isExistingItem);
+      itemForm.classList.toggle('d-none', deleteInput.checked && !isExistingItem);
+      btn.classList.toggle('btn-outline-danger', !deleteInput.checked);
+      btn.classList.toggle('btn-outline-secondary', deleteInput.checked);
+      btn.innerHTML = deleteInput.checked
+        ? '<i class="bi bi-arrow-counterclockwise"></i>'
+        : '<i class="bi bi-trash"></i>';
+      btn.title = deleteInput.checked ? 'Desfazer remoção' : 'Remover item';
+      btn.setAttribute('aria-label', btn.title);
+      return;
+    }
   });
 
   // Estilizar todos os campos de formulário herdados do Django

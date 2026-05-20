@@ -1,0 +1,246 @@
+{% extends "base.html" %}
+{% block title %}{{ ordem }}{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-start mb-4">
+  <div class="d-flex align-items-center gap-2">
+    <a href="{% url 'pedidos:lista_ordens' %}" class="btn btn-sm btn-outline-secondary">
+      <i class="bi bi-arrow-left"></i>
+    </a>
+    <div>
+      <h4 class="mb-0">{{ ordem }}</h4>
+      <span class="text-secondary small">Código da OP: {{ ordem.numero_arquivo }}</span>
+    </div>
+  </div>
+  <div class="d-flex gap-2">
+    {% if not ordem.data_conclusao %}
+    <form method="post">
+      {% csrf_token %}
+      <input type="hidden" name="action" value="finalizar">
+      <button type="submit" class="btn btn-sm btn-success">
+        <i class="bi bi-check2-circle"></i> Finalizar OP
+      </button>
+    </form>
+    {% endif %}
+    <a href="{% url 'pedidos:editar_ordem' ordem.pk %}" class="btn btn-sm btn-outline-secondary">
+      <i class="bi bi-pencil"></i> Editar OP
+    </a>
+  </div>
+</div>
+
+<div class="row g-3 mb-4">
+  <div class="col-md-3">
+    <div class="card bg-dark border-secondary h-100">
+      <div class="card-body py-2">
+        <div class="text-secondary small">Status</div>
+        <span class="badge mt-1
+          {% if ordem.status == 'agendada' %}bg-secondary
+          {% elif ordem.status == 'imprimindo' %}bg-warning text-dark
+          {% elif ordem.status == 'aguardando_finalizacao' %}bg-info text-dark
+          {% elif ordem.status == 'concluida' %}bg-success
+          {% elif ordem.status == 'parcialmente_falhou' %}bg-danger
+          {% else %}bg-secondary{% endif %}">
+          {{ ordem.status_display }}
+        </span>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-3">
+    <div class="card bg-dark border-secondary h-100">
+      <div class="card-body py-2">
+        <div class="text-secondary small">Impressora</div>
+        <div class="fw-semibold mt-1">{{ ordem.impressora.nome }}</div>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-3">
+    <div class="card bg-dark border-secondary h-100">
+      <div class="card-body py-2">
+        <div class="text-secondary small">Matéria-prima</div>
+        <div class="fw-semibold mt-1">{{ ordem.materia_prima.nome|default:"-" }}</div>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-3">
+    <div class="card bg-dark border-secondary h-100">
+      <div class="card-body py-2">
+        <div class="text-secondary small">Quantidade usada</div>
+        <div class="fw-semibold mt-1">
+          {% if ordem.quantidade_utilizada %}{{ ordem.quantidade_utilizada }}{% else %}-{% endif %}
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+{% if ordem.observacoes %}
+<div class="alert alert-secondary mb-4">
+  <small class="text-secondary">Obs:</small> {{ ordem.observacoes }}
+</div>
+{% endif %}
+
+<div class="card bg-dark border-secondary">
+  <div class="card-header d-flex justify-content-between align-items-center">
+    <span class="text-secondary small">Itens da Ordem</span>
+    <span class="badge bg-secondary">{{ op_itens.count }} item(ns)</span>
+  </div>
+  <div class="table-responsive">
+    <table class="table table-dark table-sm mb-0 align-middle">
+      <thead class="text-secondary">
+        <tr>
+          <th>Item</th>
+          <th>Pedido</th>
+          <th>Qtd</th>
+          <th>Tipo</th>
+          <th>Arquivo</th>
+          <th>Status</th>
+          <th class="text-end">Atualizar</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for row in op_item_forms %}
+        {% with oi=row.op_item %}
+        <tr>
+          <td>{{ oi.item.descricao }}</td>
+          <td>
+            <a href="{% url 'pedidos:detalhe' oi.item.pedido.pk %}" class="text-secondary text-decoration-none">
+              #{{ oi.item.pedido.pk }}
+              {% if oi.item.pedido.cliente %}- {{ oi.item.pedido.cliente.nome|truncatechars:18 }}{% endif %}
+            </a>
+          </td>
+          <td>{{ oi.item.quantidade }}</td>
+          <td>{{ oi.item.get_tipo_impressao_display }}</td>
+          <td><span class="text-secondary small font-monospace">{{ oi.item.arquivo_stl|default:"-" }}</span></td>
+          <td>
+            <span class="badge
+              {% if oi.status == 'na_fila' %}bg-secondary
+              {% elif oi.status == 'imprimindo' %}bg-warning text-dark
+              {% elif oi.status == 'concluido' %}bg-success
+              {% elif oi.status == 'falhou' %}bg-danger
+              {% else %}bg-secondary{% endif %}">
+              {{ oi.get_status_display }}
+            </span>
+          </td>
+          <td>
+            {% if ordem.data_conclusao %}
+              <span class="text-secondary small">OP finalizada</span>
+            {% else %}
+            <form method="post" class="d-flex justify-content-end gap-2">
+              {% csrf_token %}
+              <input type="hidden" name="action" value="status">
+              <input type="hidden" name="op_item_id" value="{{ oi.pk }}">
+              {{ row.form.status }}
+              <button type="submit" class="btn btn-sm btn-outline-primary">Salvar</button>
+            </form>
+            {% endif %}
+          </td>
+        </tr>
+        {% endwith %}
+        {% empty %}
+        <tr><td colspan="7" class="text-center text-secondary py-3">Nenhum item nesta OP.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+
+{% if not ordem.data_conclusao %}
+<div class="card bg-dark border-secondary mt-4">
+  <div class="card-header d-flex justify-content-between align-items-center">
+    <span class="text-secondary small">Adicionar itens nesta OP</span>
+    <span class="badge bg-secondary">{{ itens_disponiveis.count }} disponível(is)</span>
+  </div>
+
+  {% if itens_disponiveis %}
+  <form method="post">
+    {% csrf_token %}
+    <input type="hidden" name="action" value="add_items">
+
+    <div class="table-responsive" style="max-height: 360px; overflow-y: auto;">
+      <table class="table table-dark table-hover table-sm mb-0 align-middle">
+        <thead class="text-secondary sticky-top" style="top:0; background:#212529;">
+          <tr>
+            <th style="width:36px"></th>
+            <th>Item</th>
+            <th>Pedido</th>
+            <th>Qtd</th>
+            <th>Tipo</th>
+            <th>Status atual</th>
+            <th>Prazo</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for item in itens_disponiveis %}
+          <tr>
+            <td>
+              <input class="form-check-input item-add-check" type="checkbox" name="item_ids" value="{{ item.pk }}" id="add_item_{{ item.pk }}">
+            </td>
+            <td>
+              <label for="add_item_{{ item.pk }}" class="mb-0 w-100">
+                {{ item.descricao }}
+                {% if item.arquivo_stl %}
+                  <span class="text-secondary small font-monospace ms-1">({{ item.arquivo_stl }})</span>
+                {% endif %}
+              </label>
+            </td>
+            <td>
+              <a href="{% url 'pedidos:detalhe' item.pedido.pk %}" class="text-secondary text-decoration-none">
+                #{{ item.pedido.pk }}
+                {% if item.pedido.cliente %}- {{ item.pedido.cliente.nome|truncatechars:18 }}{% endif %}
+              </a>
+              {% if item.pedido.prioridade == 'urgente' %}
+                <span class="badge bg-danger ms-1" style="font-size:.6rem;">Urgente</span>
+              {% endif %}
+            </td>
+            <td>{{ item.quantidade }}</td>
+            <td>{{ item.get_tipo_impressao_display }}</td>
+            <td>
+              <span class="badge
+                {% if item.status == 'na_fila' %}bg-secondary
+                {% elif item.status == 'falhou' %}bg-danger
+                {% else %}bg-secondary{% endif %}">
+                {{ item.status_display }}
+              </span>
+            </td>
+            <td>{{ item.pedido.data_prazo|date:"d/m/Y"|default:"-" }}</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+
+    <div class="card-footer border-secondary d-flex justify-content-between align-items-center">
+      <span class="text-secondary small" id="add-items-counter">0 selecionados</span>
+      <button type="submit" class="btn btn-sm btn-outline-primary">
+        <i class="bi bi-plus-lg"></i> Adicionar selecionados
+      </button>
+    </div>
+  </form>
+  {% else %}
+  <div class="card-body text-center text-secondary">
+    Nenhum item disponível para adicionar nesta OP.
+  </div>
+  {% endif %}
+</div>
+{% endif %}
+{% endblock %}
+
+{% block scripts %}
+<script>
+(function () {
+  const checks = document.querySelectorAll('.item-add-check');
+  const counter = document.getElementById('add-items-counter');
+
+  function updateCounter() {
+    if (!counter) {
+      return;
+    }
+    const n = document.querySelectorAll('.item-add-check:checked').length;
+    counter.textContent = n + ' selecionado' + (n !== 1 ? 's' : '');
+  }
+
+  checks.forEach(cb => cb.addEventListener('change', updateCounter));
+  updateCounter();
+})();
+</script>
+{% endblock %}

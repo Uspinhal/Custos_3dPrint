@@ -1,0 +1,62 @@
+{% extends "base.html" %}
+{% block title %}Editar {{ ordem }}{% endblock %}
+
+{% block content %}
+<div class="d-flex align-items-center gap-2 mb-4">
+  <a href="{% url 'pedidos:detalhe_ordem' ordem.pk %}" class="btn btn-sm btn-outline-secondary">
+    <i class="bi bi-arrow-left"></i>
+  </a>
+  <h4 class="mb-0">Editar {{ ordem }}</h4>
+</div>
+
+<form method="post">
+  {% csrf_token %}
+
+  {% if form.non_field_errors %}
+    <div class="alert alert-danger">{{ form.non_field_errors }}</div>
+  {% endif %}
+
+  <div class="card bg-dark border-secondary mb-4">
+    <div class="card-header text-secondary small">Configuração da OP</div>
+    <div class="card-body">
+      <div class="row g-3">
+        <div class="col-md-4">
+          <label class="form-label small text-secondary">Impressora</label>
+          {{ form.impressora }}
+          {% if form.impressora.errors %}<div class="text-danger small">{{ form.impressora.errors }}</div>{% endif %}
+        </div>
+        <div class="col-md-4">
+          <label class="form-label small text-secondary">Matéria-prima</label>
+          {{ form.materia_prima }}
+          {% if form.materia_prima.errors %}<div class="text-danger small">{{ form.materia_prima.errors }}</div>{% endif %}
+        </div>
+        <div class="col-md-4">
+          <label class="form-label small text-secondary">Quantidade utilizada</label>
+          {{ form.quantidade_utilizada }}
+          {% if form.quantidade_utilizada.errors %}<div class="text-danger small">{{ form.quantidade_utilizada.errors }}</div>{% endif %}
+        </div>
+        <div class="col-md-6">
+          <label class="form-label small text-secondary">Data início</label>
+          {{ form.data_inicio }}
+          {% if form.data_inicio.errors %}<div class="text-danger small">{{ form.data_inicio.errors }}</div>{% endif %}
+        </div>
+        <div class="col-md-6">
+          <label class="form-label small text-secondary">Data conclusão</label>
+          {{ form.data_conclusao }}
+          {% if form.data_conclusao.errors %}<div class="text-danger small">{{ form.data_conclusao.errors }}</div>{% endif %}
+        </div>
+        <div class="col-12">
+          <label class="form-label small text-secondary">Observações</label>
+          {{ form.observacoes }}
+          {% if form.observacoes.errors %}<div class="text-danger small">{{ form.observacoes.errors }}</div>{% endif %}
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="d-flex gap-2">
+    <button type="submit" class="btn btn-primary">Salvar alterações</button>
+    <a href="{% url 'pedidos:detalhe_ordem' ordem.pk %}" class="btn btn-outline-secondary">Cancelar</a>
+  </div>
+</form>
+{% endblock %}

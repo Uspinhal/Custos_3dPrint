@@ -4,7 +4,7 @@
 {% block content %}
 <div class="d-flex justify-content-between align-items-center mb-4">
   <h4 class="mb-0">📦 Pedidos</h4>
-  <a href="{% url 'pedidos:criar' %}" class="btn btn-primary btn-sm">
+  <a href="{% url 'pedidos:novo' %}" class="btn btn-primary btn-sm">
     <i class="bi bi-plus-lg"></i> Novo Pedido
   </a>
 </div>
@@ -94,7 +94,7 @@
               {% elif status == 'em_producao' %}bg-warning text-dark
               {% elif status == 'embalado' %}bg-info text-dark
               {% else %}bg-secondary{% endif %}">
-              {{ status|capfirst|replace:"_":" " }}
+              {{ p.status_display }}
             </span>
             {% endwith %}
           {% endif %}
@@ -119,7 +119,7 @@
 {% else %}
 <div class="text-center py-5 text-secondary">
   <p class="mb-2">Nenhum pedido encontrado.</p>
-  <a href="{% url 'pedidos:criar' %}" class="btn btn-primary btn-sm">Criar primeiro pedido</a>
+  <a href="{% url 'pedidos:novo' %}" class="btn btn-primary btn-sm">Criar primeiro pedido</a>
 </div>
 {% endif %}
 {% endblock %}

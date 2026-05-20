@@ -9,6 +9,6 @@ class FabricanteAdmin(admin.ModelAdmin):
 
 @admin.register(Equipamento)
 class EquipamentoAdmin(admin.ModelAdmin):
-    list_display = ('nome', 'modelo', 'fabricante', 'data_aquisicao', 'custo_aquisicao', 'potencia_watts')
+    list_display = ('nome', 'modelo', 'fabricante', 'status_operacional_display', 'em_manutencao', 'data_aquisicao', 'custo_aquisicao', 'potencia_watts')
     search_fields = ('nome', 'modelo', 'fabricante__nome')
-    list_filter = ('modelo', 'fabricante', 'data_aquisicao')
+    list_filter = ('modelo', 'fabricante', 'em_manutencao', 'data_aquisicao')

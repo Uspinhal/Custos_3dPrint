@@ -194,12 +194,14 @@ class OrdemProducao(models.Model):
     STATUS_AGENDADA            = "agendada"
     STATUS_IMPRIMINDO          = "imprimindo"
     STATUS_PARCIALMENTE_FALHOU = "parcialmente_falhou"
+    STATUS_AGUARDANDO_FINALIZACAO = "aguardando_finalizacao"
     STATUS_CONCLUIDA           = "concluida"
 
     STATUS_LABELS = {
         STATUS_AGENDADA:            "Agendada",
         STATUS_IMPRIMINDO:          "Imprimindo",
         STATUS_PARCIALMENTE_FALHOU: "Parcialmente falhou",
+        STATUS_AGUARDANDO_FINALIZACAO: "Aguardando finalização",
         STATUS_CONCLUIDA:           "Concluída",
     }
 
@@ -207,11 +209,14 @@ class OrdemProducao(models.Model):
     def status(self):
         statuses = list(self.op_itens.values_list("status", flat=True))  # type: ignore[attr-defined]
 
+        if self.data_conclusao:
+            return self.STATUS_CONCLUIDA
+
         if not statuses:
             return self.STATUS_AGENDADA
 
         if all(s == "concluido" for s in statuses):
-            return self.STATUS_CONCLUIDA
+            return self.STATUS_AGUARDANDO_FINALIZACAO
 
         if any(s == "imprimindo" for s in statuses):
             return self.STATUS_IMPRIMINDO

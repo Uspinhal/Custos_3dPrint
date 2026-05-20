@@ -44,7 +44,7 @@
               {% elif status == 'em_producao' %}bg-warning text-dark
               {% elif status == 'embalado' %}bg-info text-dark
               {% else %}bg-secondary{% endif %}">
-              {{ status|capfirst|replace:"_":" " }}
+              {{ pedido.status_display }}
             </span>
           {% endif %}
         </div>
@@ -143,8 +143,8 @@
             {% endwith %}
           </td>
           <td>
-            {% for oi in item.ordens_item.all %}
-              <a href="{% url 'pedidos:ordem_detalhe' oi.ordem.pk %}"
+            {% for oi in item.op_itens.all %}
+              <a href="{% url 'pedidos:detalhe_ordem' oi.ordem.pk %}"
                  class="badge bg-outline-secondary text-secondary border border-secondary text-decoration-none me-1">
                 OP #{{ oi.ordem.pk }}
               </a>
@@ -165,7 +165,7 @@
 {# ── Link rápido para nova OP ── #}
 {% if not pedido.is_enviado %}
 <div class="d-flex gap-2">
-  <a href="{% url 'pedidos:ordem_nova' %}" class="btn btn-sm btn-outline-primary">
+  <a href="{% url 'pedidos:nova_ordem' %}" class="btn btn-sm btn-outline-primary">
     <i class="bi bi-printer"></i> Criar Ordem de Produção com itens deste pedido
   </a>
 </div>

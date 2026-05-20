@@ -7,7 +7,7 @@ class EquipamentoForm(forms.ModelForm):
         fields = [
             "nome", "modelo", "tipo", "fabricante", "data_aquisicao",
             "custo_aquisicao", "custo_manutencao_mensal",
-            "potencia_watts", "vida_util_anos"
+            "potencia_watts", "vida_util_anos", "em_manutencao",
         ]
         widgets = {
             "data_aquisicao": forms.DateInput(attrs={"type": "date"}, format="%Y-%m-%d"),

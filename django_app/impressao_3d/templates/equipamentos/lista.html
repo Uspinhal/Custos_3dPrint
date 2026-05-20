@@ -13,6 +13,7 @@
             <th>Nome</th>
             <th>Modelo</th>
             <th>Tipo</th>
+            <th>Status</th>
             <th>Fabricante</th>
             <th>Data de aquisição</th>
             <th>Custo aquisição</th>
@@ -27,6 +28,17 @@
             <td>{{ e.nome }}</td>
             <td>{{ e.modelo }}</td>
             <td>{{ e.tipo }}</td>
+            <td>
+                <span class="badge
+                    {% if e.status_operacional == 'maintenance' %}bg-danger
+                    {% elif e.status_operacional == 'printing' %}bg-warning text-dark
+                    {% else %}bg-success{% endif %}">
+                    {{ e.status_operacional_display }}
+                </span>
+                {% if e.op_atual %}
+                    <span class="text-secondary small ms-1">{{ e.op_atual }}</span>
+                {% endif %}
+            </td>
             <td>
                 {% if e.fabricante %}
                     {{ e.fabricante.nome }}
@@ -45,7 +57,7 @@
             </td>
         </tr>
         {% empty %}
-        <tr><td colspan="10">Nenhum equipamento cadastrado.</td></tr>
+        <tr><td colspan="11">Nenhum equipamento cadastrado.</td></tr>
         {% endfor %}
     </tbody>
     </table>

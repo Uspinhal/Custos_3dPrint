@@ -3,7 +3,7 @@
 
 {% block content %}
 <div class="d-flex align-items-center gap-2 mb-4">
-  <a href="{% url 'pedidos:ordem_lista' %}" class="btn btn-sm btn-outline-secondary">
+  <a href="{% url 'pedidos:lista_ordens' %}" class="btn btn-sm btn-outline-secondary">
     <i class="bi bi-arrow-left"></i>
   </a>
   <h4 class="mb-0">🖨️ Nova Ordem de Produção</h4>
@@ -116,7 +116,7 @@
                     <input class="form-check-input item-check" type="checkbox"
                            name="item_ids" value="{{ item.pk }}"
                            id="item_{{ item.pk }}"
-                           {% if item.pk|stringformat:'s' in request.POST.getlist.item_ids %}checked{% endif %}>
+                           {% if item.pk|stringformat:'s' in selected_item_ids %}checked{% endif %}>
                   </td>
                   <td>
                     <label for="item_{{ item.pk }}" class="mb-0 w-100 cursor-pointer">
@@ -167,11 +167,7 @@
           {% endif %}
         </div>
 
-        {% if item_form.item_ids.errors %}
-        <div class="card-footer border-secondary">
-          <div class="text-danger small">{{ item_form.item_ids.errors }}</div>
-        </div>
-        {% endif %}
+        <input type="hidden" name="tipo_impressao_filtro" value="{{ tipo_filtro }}">
       </div>
 
       {# Aviso nenhum item selecionado #}
@@ -186,13 +182,13 @@
     <button type="submit" class="btn btn-primary" id="btn-submit">
       <i class="bi bi-printer"></i> Criar Ordem de Produção
     </button>
-    <a href="{% url 'pedidos:ordem_lista' %}" class="btn btn-outline-secondary">Cancelar</a>
+    <a href="{% url 'pedidos:lista_ordens' %}" class="btn btn-outline-secondary">Cancelar</a>
   </div>
 
 </form>
 {% endblock %}
 
-{% block extra_js %}
+{% block scripts %}
 <script>
 (function () {
   const checkboxes = document.querySelectorAll('.item-check');
@@ -203,17 +199,23 @@
 
   function updateCounter() {
     const n = document.querySelectorAll('.item-check:checked').length;
-    counter.textContent = n + ' selecionado' + (n !== 1 ? 's' : '');
-    selectAll.indeterminate = n > 0 && n < checkboxes.length;
-    selectAll.checked = n === checkboxes.length && n > 0;
+    if (counter) {
+      counter.textContent = n + ' selecionado' + (n !== 1 ? 's' : '');
+    }
+    if (selectAll) {
+      selectAll.indeterminate = n > 0 && n < checkboxes.length;
+      selectAll.checked = n === checkboxes.length && n > 0;
+    }
   }
 
   checkboxes.forEach(cb => cb.addEventListener('change', updateCounter));
 
-  selectAll.addEventListener('change', function () {
-    checkboxes.forEach(cb => { cb.checked = this.checked; });
-    updateCounter();
-  });
+  if (selectAll) {
+    selectAll.addEventListener('change', function () {
+      checkboxes.forEach(cb => { cb.checked = this.checked; });
+      updateCounter();
+    });
+  }
 
   // Validação client-side ao submeter
   btnSubmit.closest('form').addEventListener('submit', function (e) {

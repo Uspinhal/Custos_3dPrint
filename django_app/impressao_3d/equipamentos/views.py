@@ -12,7 +12,6 @@ import json
 # Create your views here.
 def lista_equipamentos(request):
     equipamentos = Equipamento.objects.all().order_by('nome')
-    print("Equipamentos no view:", equipamentos) 
     return render(request, 'equipamentos/lista.html', {'equipamentos': equipamentos})
 
 def criar_equipamento(request):
