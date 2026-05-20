@@ -36,20 +36,10 @@
             {% if form.materia_prima.errors %}<div class="text-danger small mt-1">{{ form.materia_prima.errors }}</div>{% endif %}
           </div>
 
-          <div class="mb-3">
-            <label class="form-label small text-secondary">Qtd. utilizada (ml / g)</label>
-            {{ form.quantidade_utilizada }}
-            <div class="form-text text-secondary">Preencha apenas ao concluir a OP.</div>
-          </div>
-
           <div class="row g-2">
-            <div class="col-6">
+            <div class="col-12">
               <label class="form-label small text-secondary">Data início</label>
               {{ form.data_inicio }}
-            </div>
-            <div class="col-6">
-              <label class="form-label small text-secondary">Data conclusão</label>
-              {{ form.data_conclusao }}
             </div>
           </div>
 

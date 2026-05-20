@@ -282,12 +282,24 @@ def detalhe_ordem(request, ordem_id):
                 messages.error(request, 'Todos os itens precisam estar concluídos para finalizar a OP.')
                 return redirect('pedidos:detalhe_ordem', ordem_id=ordem.pk)
 
-            if not ordem.quantidade_utilizada:
+            quantidade_utilizada = request.POST.get('quantidade_utilizada')
+            if quantidade_utilizada in (None, ''):
                 messages.error(request, 'Preencha a quantidade utilizada antes de finalizar a OP.')
                 return redirect('pedidos:detalhe_ordem', ordem_id=ordem.pk)
 
+            try:
+                quantidade_utilizada_float = float(quantidade_utilizada.replace(',', '.'))
+            except ValueError:
+                messages.error(request, 'Informe uma quantidade utilizada válida.')
+                return redirect('pedidos:detalhe_ordem', ordem_id=ordem.pk)
+
+            if quantidade_utilizada_float <= 0:
+                messages.error(request, 'A quantidade utilizada precisa ser maior que zero.')
+                return redirect('pedidos:detalhe_ordem', ordem_id=ordem.pk)
+
+            ordem.quantidade_utilizada = quantidade_utilizada_float
             ordem.data_conclusao = timezone.now()
-            ordem.save(update_fields=['data_conclusao'])
+            ordem.save(update_fields=['quantidade_utilizada', 'data_conclusao'])
             messages.success(request, f'{ordem} finalizada com sucesso.')
             return redirect('pedidos:detalhe_ordem', ordem_id=ordem.pk)
 

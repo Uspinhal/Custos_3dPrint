@@ -63,27 +63,19 @@ class OrdemProducaoForm(forms.ModelForm):
     class Meta:
         model = OrdemProducao
         fields = [
-            'impressora', 'materia_prima', 'quantidade_utilizada',
-            'data_inicio', 'data_conclusao', 'observacoes',
+            'impressora', 'materia_prima', 'data_inicio', 'observacoes',
         ]
         widgets = {
             'impressora':           forms.Select(attrs={'class': 'form-select'}),
             'materia_prima':        forms.Select(attrs={'class': 'form-select'}),
-            'quantidade_utilizada': forms.NumberInput(attrs={'class': 'form-control', 'step': '0.1', 'placeholder': 'Preencher ao concluir'}),
             'data_inicio':          forms.DateTimeInput(attrs={'class': 'form-control', 'type': 'datetime-local'}, format='%Y-%m-%dT%H:%M'),
-            'data_conclusao':       forms.DateTimeInput(attrs={'class': 'form-control', 'type': 'datetime-local'}, format='%Y-%m-%dT%H:%M'),
             'observacoes':          forms.Textarea(attrs={'class': 'form-control', 'rows': 3}),
         }
         labels = {
             'impressora':           'Impressora',
             'materia_prima':        'Matéria-Prima',
-            'quantidade_utilizada': 'Quantidade utilizada (g ou ml)',
             'data_inicio':          'Início',
-            'data_conclusao':       'Conclusão',
             'observacoes':          'Observações',
-        }
-        help_texts = {
-            'quantidade_utilizada': 'Obrigatório para concluir a OP.',
         }
 
 

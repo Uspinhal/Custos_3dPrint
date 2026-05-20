@@ -14,9 +14,19 @@
   </div>
   <div class="d-flex gap-2">
     {% if not ordem.data_conclusao %}
-    <form method="post">
+    <form method="post" class="d-flex gap-2 align-items-end">
       {% csrf_token %}
       <input type="hidden" name="action" value="finalizar">
+      <div>
+        <label class="form-label small text-secondary mb-1">Quantidade usada</label>
+        <input type="number"
+               name="quantidade_utilizada"
+               class="form-control form-control-sm bg-dark text-light border-secondary"
+               step="0.1"
+               min="0"
+               value="{% if ordem.quantidade_utilizada %}{{ ordem.quantidade_utilizada|stringformat:'g' }}{% endif %}"
+               required>
+      </div>
       <button type="submit" class="btn btn-sm btn-success">
         <i class="bi bi-check2-circle"></i> Finalizar OP
       </button>
